@@ -1,0 +1,3004 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Nusantara Constitutional Quest — Open World UUD 1945</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Three.js r128 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- Google Fonts: Inter & Cinzel -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Inter', sans-serif;
+      background-color: #0b1320;
+    }
+    .font-title {
+      font-family: 'Cinzel', serif;
+    }
+    #game-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.78);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(251, 191, 36, 0.25);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.45);
+    }
+    .glass-light {
+      background: rgba(30, 41, 59, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    /* Custom scrollbar for modal */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(245, 158, 11, 0.5);
+      border-radius: 999px;
+    }
+    @keyframes pulseGlow {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 15px rgba(245, 158, 11, 0.45); }
+      50% { transform: scale(1.03); box-shadow: 0 0 28px rgba(245, 158, 11, 0.8); }
+    }
+    .btn-gold {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      animation: pulseGlow 2.4s infinite ease-in-out;
+    }
+    .btn-gold:hover {
+      background: linear-gradient(135deg, #fbbf24 0%, #b45309 100%);
+    }
+    @keyframes floatUp {
+      0% { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-55px) scale(1.15); }
+    }
+    .floating-score {
+      animation: floatUp 1.4s ease-out forwards;
+    }
+  </style>
+</head>
+<body class="text-slate-100">
+
+  <!-- 3D World Canvas -->
+  <canvas id="game-canvas"></canvas>
+
+  <!-- Start / Title Overlay -->
+  <div id="start-screen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-md transition-opacity duration-500">
+    <div class="glass-panel max-w-2xl w-full rounded-3xl p-6 sm:p-10 text-center relative overflow-hidden">
+      <div class="absolute -top-24 -right-24 w-56 h-56 bg-amber-500/20 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-24 -left-24 w-56 h-56 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/15 border border-amber-400/30 text-amber-300 text-xs sm:text-sm font-semibold tracking-wider uppercase mb-4">
+        <span>🇮🇩</span> Pendidikan Pancasila • Open-World 3D
+      </div>
+
+      <h1 class="font-title text-3xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-500 drop-shadow mb-3">
+        NUSANTARA QUEST
+      </h1>
+      <p class="text-amber-100/90 font-semibold text-base sm:text-lg mb-4">
+        Ekspedisi Harta Karun Konstitusi: UUD NRI Tahun 1945 (Sebelum & Sesudah Amandemen)
+      </p>
+      <p class="text-slate-300 text-sm sm:text-base leading-relaxed mb-6 max-w-xl mx-auto">
+        Jelajahi kepulauan & pegunungan Nusantara seluas <span class="text-emerald-400 font-bold">1.100m²</span> yang realistis! Temukan <span class="text-amber-400 font-bold">30 Peti Harta Karun</span> yang tersembunyi di balik batu besar, celah gua, puncak tebing terjal, hingga pulau karang lepas pantai.
+      </p>
+
+      <!-- Controls Guide -->
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs mb-7">
+        <div class="bg-slate-900/80 border border-slate-700/70 rounded-2xl p-2.5">
+          <div class="text-amber-400 font-bold text-sm mb-0.5">W A S D</div>
+          <div class="text-slate-400">Jelajah Dunia</div>
+        </div>
+        <div class="bg-slate-900/80 border border-slate-700/70 rounded-2xl p-2.5">
+          <div class="text-amber-400 font-bold text-sm mb-0.5">SHIFT</div>
+          <div class="text-slate-400">Sprint + Stamina</div>
+        </div>
+        <div class="bg-slate-900/80 border border-slate-700/70 rounded-2xl p-2.5">
+          <div class="text-amber-400 font-bold text-sm mb-0.5">SPASI</div>
+          <div class="text-slate-400">Lompat / Panjat</div>
+        </div>
+        <div class="bg-slate-900/80 border border-slate-700/70 rounded-2xl p-2.5">
+          <div class="text-sky-400 font-bold text-sm mb-0.5">Tombol Q</div>
+          <div class="text-slate-400">Sonar Pelacak</div>
+        </div>
+        <div class="col-span-2 sm:col-span-1 bg-slate-900/80 border border-slate-700/70 rounded-2xl p-2.5">
+          <div class="text-emerald-400 font-bold text-sm mb-0.5">E / Klik</div>
+          <div class="text-slate-400">Buka Peti</div>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+        <button id="btn-start-game" class="btn-gold w-full sm:w-auto px-8 py-4 rounded-2xl font-bold text-slate-950 text-base sm:text-lg tracking-wide shadow-xl cursor-pointer transition transform active:scale-95">
+          🧭 Mulai Petualangan Sekarang
+        </button>
+        <button id="btn-open-guide-start" class="w-full sm:w-auto px-6 py-4 rounded-2xl font-semibold text-amber-200 bg-slate-800/90 hover:bg-slate-700 border border-amber-500/30 text-sm sm:text-base cursor-pointer transition">
+          📖 Ringkasan Materi UUD 1945
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- In-Game HUD -->
+  <div id="hud" class="fixed inset-0 z-20 pointer-events-none hidden">
+    <!-- Top Bar -->
+    <div class="flex flex-wrap items-start justify-between gap-3 p-3 sm:p-5">
+      <!-- Left: Score & Progress -->
+      <div class="flex flex-wrap items-center gap-2.5 pointer-events-auto">
+        <div class="glass-panel rounded-2xl px-4 py-2.5 flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-xl">
+            🏆
+          </div>
+          <div>
+            <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Total Poin</div>
+            <div id="hud-score" class="text-xl sm:text-2xl font-extrabold text-amber-400 leading-none">0</div>
+          </div>
+        </div>
+
+        <div class="glass-panel rounded-2xl px-4 py-2.5 flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-xl">
+            💎
+          </div>
+          <div>
+            <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Harta Karun</div>
+            <div class="text-lg sm:text-xl font-extrabold text-emerald-300 leading-none">
+              <span id="hud-found">0</span><span class="text-slate-400 text-sm font-semibold"> / 30</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="streak-badge" class="hidden glass-panel rounded-2xl px-3.5 py-2.5 items-center gap-2 border-orange-400/40">
+          <span class="text-lg">🔥</span>
+          <div>
+            <div class="text-[10px] uppercase tracking-wider text-orange-300 font-bold">Combo</div>
+            <div id="hud-streak" class="text-base font-extrabold text-orange-400 leading-none">0x</div>
+          </div>
+        </div>
+
+        <!-- Stamina & Sonar Pulse Bar -->
+        <div class="glass-panel rounded-2xl px-3.5 py-2 flex flex-col gap-1.5 min-w-[135px]">
+          <div class="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider">
+            <span class="text-sky-300">⚡ Stamina</span>
+            <span id="stamina-text" class="text-slate-300">100%</span>
+          </div>
+          <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-700/80">
+            <div id="stamina-bar" class="h-full bg-gradient-to-r from-sky-400 to-emerald-400 transition-all duration-100" style="width: 100%"></div>
+          </div>
+          <button id="btn-sonar" title="Tekan Q untuk melacak arah peti terdekat" class="mt-0.5 w-full py-1 px-2 rounded-lg bg-amber-500/20 hover:bg-amber-500/35 border border-amber-400/40 text-amber-200 text-[10px] font-bold tracking-wide flex items-center justify-center gap-1 cursor-pointer transition">
+            <span>📡</span> <span id="sonar-label">Sonar Peti [Q]</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Right: Action Buttons & Radar Minimap -->
+      <div class="flex items-start gap-2.5 pointer-events-auto">
+        <div class="flex flex-col sm:flex-row gap-2">
+          <button id="btn-materi" title="Ringkasan Materi" class="glass-panel hover:bg-slate-800/90 text-amber-300 px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-semibold flex items-center gap-1.5 cursor-pointer transition">
+            <span>📖</span> <span class="hidden md:inline">Materi</span>
+          </button>
+          <button id="btn-sound" title="Suara Efek" class="glass-panel hover:bg-slate-800/90 text-slate-200 px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-semibold flex items-center gap-1.5 cursor-pointer transition">
+            <span id="sound-icon">🔊</span>
+          </button>
+          <button id="btn-finish" title="Lihat Hasil Akhir" class="glass-panel hover:bg-rose-950/80 border-rose-500/30 text-rose-200 px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-semibold flex items-center gap-1.5 cursor-pointer transition">
+            <span>🏁</span> <span class="hidden sm:inline">Selesai</span>
+          </button>
+        </div>
+
+        <!-- Radar Minimap -->
+        <div class="glass-panel rounded-2xl p-1.5 flex flex-col items-center">
+          <div class="relative w-24 h-24 sm:w-32 sm:h-32 rounded-xl overflow-hidden bg-slate-950/90 border border-amber-500/30">
+            <canvas id="minimap-canvas" width="140" height="140" class="w-full h-full block"></canvas>
+            <div class="absolute top-1 left-1.5 text-[9px] font-bold text-amber-400/90 tracking-widest">RADAR</div>
+            <div id="nearest-dist" class="absolute bottom-1 right-1.5 text-[9px] font-bold text-emerald-300 bg-slate-900/80 px-1.5 py-0.5 rounded">
+              --m
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center-Top Toast Notification -->
+    <div id="toast-container" class="fixed top-24 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2 pointer-events-none"></div>
+
+    <!-- Floating Score Container -->
+    <div id="floating-score-layer" class="fixed inset-0 pointer-events-none z-30"></div>
+
+    <!-- Interaction Prompt when near a chest -->
+    <div id="interact-prompt" class="hidden fixed bottom-28 sm:bottom-16 left-1/2 -translate-x-1/2 z-30 pointer-events-auto">
+      <button id="btn-interact" class="btn-gold px-6 py-3.5 rounded-2xl text-slate-950 font-extrabold text-sm sm:text-base flex items-center gap-2.5 shadow-2xl cursor-pointer transition transform hover:scale-105 active:scale-95">
+        <span class="text-xl">🧰</span>
+        <span>Buka Peti Harta Karun #<span id="prompt-chest-num">1</span> <span class="hidden sm:inline font-semibold opacity-80">[Tekan E]</span></span>
+      </button>
+    </div>
+
+    <!-- Camera Hint (Desktop) -->
+    <div class="hidden sm:flex fixed bottom-4 left-5 glass-panel rounded-xl px-3.5 py-2 text-xs text-slate-300 items-center gap-2">
+      <span>🖱️ Seret layar putar kamera • <strong class="text-amber-300">WASD</strong> Jalan • <strong class="text-amber-300">Shift</strong> Lari • <strong class="text-amber-300">Spasi</strong> Lompat/Panjat Tebing • <strong class="text-sky-300">Q</strong> Sonar • <strong class="text-emerald-300">E</strong> Buka Peti</span>
+    </div>
+
+    <!-- Mobile Touch Controls (Joystick + Action Buttons) -->
+    <div class="sm:hidden fixed bottom-4 inset-x-4 flex items-end justify-between pointer-events-none">
+      <!-- Virtual Joystick -->
+      <div id="joystick-zone" class="w-28 h-28 rounded-full glass-panel relative pointer-events-auto touch-none flex items-center justify-center">
+        <div id="joystick-knob" class="w-12 h-12 rounded-full bg-amber-400/80 border-2 border-white shadow-lg transform transition-transform duration-75"></div>
+      </div>
+
+      <!-- Sonar, Sprint & Jump Buttons -->
+      <div class="flex items-end gap-2 pointer-events-auto">
+        <button id="btn-mobile-sonar" class="w-13 h-13 p-2.5 rounded-2xl glass-panel text-sky-300 font-bold text-[11px] flex flex-col items-center justify-center active:bg-sky-500/30">
+          <span class="text-base">📡</span>
+          <span>Sonar</span>
+        </button>
+        <div class="flex flex-col gap-2">
+          <button id="btn-mobile-sprint" class="w-14 h-14 rounded-2xl glass-panel text-amber-300 font-bold text-xs flex flex-col items-center justify-center active:bg-amber-500/30">
+            <span class="text-lg">⚡</span>
+            <span>Lari</span>
+          </button>
+          <button id="btn-mobile-jump" class="w-14 h-14 rounded-2xl glass-panel text-emerald-300 font-bold text-xs flex flex-col items-center justify-center active:bg-emerald-500/30">
+            <span class="text-lg">⬆️</span>
+            <span>Lompat</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quiz Modal (Triggered when opening a treasure chest) -->
+  <div id="quiz-modal" class="fixed inset-0 z-40 hidden items-center justify-center p-3 sm:p-6 bg-slate-950/80 backdrop-blur-md overflow-y-auto">
+    <div class="glass-panel max-w-2xl w-full rounded-3xl p-5 sm:p-8 my-auto relative border-amber-400/40">
+      <!-- Header -->
+      <div class="flex items-center justify-between gap-3 pb-4 mb-4 border-b border-slate-700/80">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-2xl shadow-lg">
+            📜
+          </div>
+          <div>
+            <div class="text-xs uppercase tracking-wider font-bold text-amber-400">
+              Peti Harta Karun #<span id="quiz-chest-id">1</span> • Tantangan Konstitusi
+            </div>
+            <div id="quiz-category" class="text-xs text-slate-400 font-medium">
+              UUD NRI Tahun 1945 Sebelum & Sesudah Amandemen
+            </div>
+          </div>
+        </div>
+        <div class="text-right">
+          <span class="inline-block px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-xs font-bold">
+            +100 Poin
+          </span>
+        </div>
+      </div>
+
+      <!-- Question Text -->
+      <div class="mb-5">
+        <p id="quiz-question" class="text-base sm:text-lg font-semibold text-white leading-relaxed">
+          Memuat pertanyaan...
+        </p>
+      </div>
+
+      <!-- 5 Options (A, B, C, D, E) -->
+      <div id="quiz-options" class="space-y-2.5 mb-5">
+        <!-- Injected dynamically -->
+      </div>
+
+      <!-- Feedback / Explanation Box -->
+      <div id="quiz-feedback" class="hidden rounded-2xl p-4 mb-5 border">
+        <div id="feedback-title" class="font-extrabold text-base mb-1"></div>
+        <p id="feedback-explanation" class="text-sm text-slate-200 leading-relaxed"></p>
+      </div>
+
+      <!-- Continue Button -->
+      <div id="quiz-footer" class="hidden justify-end">
+        <button id="btn-quiz-continue" class="btn-gold px-6 py-3 rounded-2xl font-bold text-slate-950 text-sm sm:text-base cursor-pointer transition transform active:scale-95">
+          Lanjutkan Eksplorasi ➔
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Study Guide Modal (Ringkasan Materi UUD 1945) -->
+  <div id="guide-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-3 sm:p-6 bg-slate-950/85 backdrop-blur-md">
+    <div class="glass-panel max-w-3xl w-full max-h-[88vh] flex flex-col rounded-3xl p-5 sm:p-7">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-700/80">
+        <div>
+          <h2 class="font-title text-xl sm:text-2xl font-bold text-amber-400">Ringkasan Materi UUD NRI 1945</h2>
+          <p class="text-xs sm:text-sm text-slate-400">Perbandingan Sebelum dan Sesudah Amandemen (1999–2002)</p>
+        </div>
+        <button id="btn-close-guide" class="w-10 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold cursor-pointer">
+          ✕
+        </button>
+      </div>
+
+      <div class="overflow-y-auto py-4 space-y-4 text-sm text-slate-200 pr-1">
+        <div class="bg-slate-900/80 border border-amber-500/20 rounded-2xl p-4">
+          <h3 class="font-bold text-amber-300 text-base mb-2">1. Sistematika UUD 1945</h3>
+          <ul class="list-disc list-inside space-y-1 text-slate-300">
+            <li><strong class="text-white">Sebelum Amandemen:</strong> Terdiri dari Pembukaan, Batang Tubuh (16 Bab, 37 Pasal, 4 Pasal Aturan Peralihan, 2 Ayat Aturan Tambahan), dan Penjelasan.</li>
+            <li><strong class="text-white">Sesudah Amandemen:</strong> Terdiri dari Pembukaan dan Pasal-pasal (21 Bab, 73 Pasal, 3 Pasal Aturan Peralihan, 2 Pasal Aturan Tambahan). Bagian Penjelasan dihapus karena materi normatifnya telah dimasukkan ke dalam pasal-pasal.</li>
+          </ul>
+        </div>
+
+        <div class="bg-slate-900/80 border border-amber-500/20 rounded-2xl p-4">
+          <h3 class="font-bold text-amber-300 text-base mb-2">2. Kedaulatan Rakyat & Kedudukan MPR</h3>
+          <ul class="list-disc list-inside space-y-1 text-slate-300">
+            <li><strong class="text-white">Sebelum Amandemen:</strong> Kedaulatan berada di tangan rakyat dan dilakukan sepenuhnya oleh MPR sebagai <em>lembaga tertinggi negara</em>.</li>
+            <li><strong class="text-white">Sesudah Amandemen (Pasal 1 ayat 2):</strong> Kedaulatan berada di tangan rakyat dan dilaksanakan menurut Undang-Undang Dasar. MPR menjadi lembaga negara yang sejajar dengan lembaga negara lainnya, anggotanya terdiri atas anggota DPR dan DPD yang dipilih melalui Pemilu.</li>
+          </ul>
+        </div>
+
+        <div class="bg-slate-900/80 border border-amber-500/20 rounded-2xl p-4">
+          <h3 class="font-bold text-amber-300 text-base mb-2">3. Presiden & Kekuasaan Legislatif</h3>
+          <ul class="list-disc list-inside space-y-1 text-slate-300">
+            <li><strong class="text-white">Pemilihan & Masa Jabatan:</strong> Sebelumnya dipilih MPR dan dapat dipilih kembali tanpa batas (Pasal 7). Sesudah amandemen, dipilih langsung oleh rakyat (Pasal 6A) dan dibatasi maksimal 2 kali masa jabatan (10 tahun).</li>
+            <li><strong class="text-white">Pembentukan UU:</strong> Sebelumnya Presiden memegang kekuasaan membentuk UU (Pasal 5 ayat 1). Sesudah amandemen, kekuasaan membentuk UU dipegang oleh DPR (Pasal 20 ayat 1), sedangkan Presiden berhak mengajukan RUU. Presiden juga tidak dapat membekukan/membubarkan DPR (Pasal 7C).</li>
+          </ul>
+        </div>
+
+        <div class="bg-slate-900/80 border border-amber-500/20 rounded-2xl p-4">
+          <h3 class="font-bold text-amber-300 text-base mb-2">4. Lembaga Negara Baru & Penghapusan DPA</h3>
+          <ul class="list-disc list-inside space-y-1 text-slate-300">
+            <li><strong class="text-white">Lembaga Baru:</strong> Dewan Perwakilan Daerah (DPD), Mahkamah Konstitusi (MK), dan Komisi Yudisial (KY).</li>
+            <li><strong class="text-white">Dihapus:</strong> Dewan Pertimbangan Agung (DPA) dihapus pada Amandemen IV dan digantikan dewan pertimbangan yang bertugas memberi nasihat kepada Presiden.</li>
+          </ul>
+        </div>
+
+        <div class="bg-slate-900/80 border border-amber-500/20 rounded-2xl p-4">
+          <h3 class="font-bold text-amber-300 text-base mb-2">5. Kesepakatan Dasar Perubahan UUD 1945</h3>
+          <p class="text-slate-300">MPR menyepakati 5 prinsip dasar: (1) Tidak mengubah Pembukaan UUD 1945, (2) Tetap mempertahankan Negara Kesatuan Republik Indonesia (Pasal 37 ayat 5), (3) Mempertegas sistem pemerintahan presidensial, (4) Penjelasan yang memuat hal-hal normatif dimasukkan ke dalam pasal-pasal, dan (5) Perubahan dilakukan dengan cara <strong>adendum</strong> (naskah asli tetap dipertahankan dan naskah perubahan dilekatkan padanya).</p>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-slate-700/80 flex justify-end">
+        <button id="btn-close-guide-bottom" class="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm cursor-pointer">
+          Siap Berpetualang!
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Final Summary / Victory Modal -->
+  <div id="result-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-3 sm:p-6 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
+    <div class="glass-panel max-w-2xl w-full rounded-3xl p-6 sm:p-8 text-center my-auto border-amber-400/50">
+      <div class="text-5xl sm:text-6xl mb-3" id="result-trophy">🏆</div>
+      <h2 class="font-title text-2xl sm:text-4xl font-extrabold text-amber-400 mb-1">
+        EKSPEDISI SELESAI!
+      </h2>
+      <p id="result-subtitle" class="text-slate-300 text-sm sm:text-base mb-6">
+        Laporan Pencapaian Penjelajah Konstitusi Nusantara
+      </p>
+
+      <div class="grid grid-cols-3 gap-3 mb-6">
+        <div class="bg-slate-900/90 border border-slate-700/80 rounded-2xl p-3.5">
+          <div class="text-xs text-slate-400 mb-1">Skor Akhir</div>
+          <div id="final-score" class="text-2xl sm:text-3xl font-extrabold text-amber-400">0</div>
+        </div>
+        <div class="bg-slate-900/90 border border-slate-700/80 rounded-2xl p-3.5">
+          <div class="text-xs text-slate-400 mb-1">Jawaban Benar</div>
+          <div class="text-2xl sm:text-3xl font-extrabold text-emerald-400">
+            <span id="final-correct">0</span><span class="text-sm text-slate-400">/30</span>
+          </div>
+        </div>
+        <div class="bg-slate-900/90 border border-slate-700/80 rounded-2xl p-3.5">
+          <div class="text-xs text-slate-400 mb-1">Predikat</div>
+          <div id="final-grade" class="text-2xl sm:text-3xl font-extrabold text-sky-400">-</div>
+        </div>
+      </div>
+
+      <div id="final-message" class="bg-amber-500/10 border border-amber-400/30 rounded-2xl p-4 text-sm text-amber-100 mb-6">
+        Luar biasa! Terus pelajari nilai-nilai konstitusi Indonesia.
+      </div>
+
+      <div class="flex flex-col sm:flex-row justify-center gap-3">
+        <button id="btn-resume-explore" class="px-6 py-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-sm cursor-pointer transition">
+          🔙 Lanjut Cari Sisa Peti
+        </button>
+        <button id="btn-restart-game" class="btn-gold px-7 py-3.5 rounded-2xl text-slate-950 font-extrabold text-sm cursor-pointer transition">
+          🔄 Main Ulang Dari Awal
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * ============================================================================
+     * BANK 30 SOAL PENDIDIKAN PANCASILA
+     * Materi: UUD NRI Tahun 1945 Sebelum dan Sesudah Amandemen (Opsi A, B, C, D, E)
+     * ============================================================================
+     */
+    const QUESTIONS_BANK = [
+      {
+        id: 1,
+        topic: "Sistematika UUD 1945",
+        question: "Perbedaan mendasar sistematika UUD NRI Tahun 1945 sebelum dan sesudah dilakukan amandemen (perubahan) adalah...",
+        options: [
+          "Sebelum amandemen terdiri atas Pembukaan dan Pasal-pasal, sedangkan sesudah amandemen ditambah bagian Penjelasan",
+          "Sebelum amandemen terdiri atas Pembukaan, Batang Tubuh, dan Penjelasan, sedangkan sesudah amandemen terdiri atas Pembukaan dan Pasal-pasal",
+          "Sebelum amandemen memiliki 21 Bab dan 73 Pasal, sedangkan sesudah amandemen menjadi 16 Bab dan 37 Pasal",
+          "Sesudah amandemen bagian Pembukaan UUD 1945 mengalami perubahan pada alinea keempat",
+          "Sesudah amandemen Aturan Peralihan dan Aturan Tambahan dihapuskan seluruhnya dari naskah UUD"
+        ],
+        correct: 1,
+        explanation: "Sebelum amandemen, UUD 1945 terdiri dari Pembukaan, Batang Tubuh (16 Bab, 37 Pasal), dan Penjelasan. Sesudah amandemen, sistematikanya menjadi Pembukaan dan Pasal-pasal (21 Bab, 73 Pasal) tanpa bagian Penjelasan."
+      },
+      {
+        id: 2,
+        topic: "Kedaulatan & Kedudukan MPR",
+        question: "Bagaimana perubahan kedudukan Majelis Permusyawaratan Rakyat (MPR) setelah amandemen UUD NRI Tahun 1945?",
+        options: [
+          "MPR tetap menjadi lembaga tertinggi negara yang membawahi Presiden, DPR, dan MA",
+          "MPR dibubarkan dan fungsinya digantikan sepenuhnya oleh Dewan Perwakilan Daerah (DPD)",
+          "MPR tidak lagi menjadi lembaga tertinggi negara, melainkan lembaga negara yang sejajar dengan lembaga tinggi negara lainnya",
+          "MPR memiliki kewenangan penuh memilih dan mengangkat Presiden serta Wakil Presiden secara langsung",
+          "MPR berwenang membatalkan putusan Mahkamah Konstitusi apabila bertentangan dengan GBHN"
+        ],
+        correct: 2,
+        explanation: "Berdasarkan Pasal 1 ayat (2) hasil amandemen, kedaulatan berada di tangan rakyat dan dilaksanakan menurut UUD. Akibatnya, MPR tidak lagi berkedudukan sebagai lembaga tertinggi negara, melainkan sejajar dengan lembaga negara lainnya."
+      },
+      {
+        id: 3,
+        topic: "Masa Jabatan Presiden",
+        question: "Menurut Pasal 7 UUD 1945 sebelum amandemen, Presiden dan Wakil Presiden memegang jabatannya selama lima tahun dan sesudahnya dapat dipilih kembali. Setelah amandemen pertama tahun 1999, ketentuan tersebut diubah menjadi...",
+        options: [
+          "Dapat dipilih kembali dalam jabatan yang sama hanya untuk satu kali masa jabatan",
+          "Dapat dipilih kembali maksimal tiga kali masa jabatan berturut-turut",
+          "Memegang jabatan selama tujuh tahun dan tidak dapat dipilih kembali",
+          "Dapat dipilih kembali tanpa batas sepanjang mendapat persetujuan MPR",
+          "Memegang jabatan selama lima tahun dan hanya boleh mencalonkan diri satu kali seumur hidup"
+        ],
+        correct: 0,
+        explanation: "Pasal 7 UUD NRI Tahun 1945 hasil Amandemen I berbunyi: 'Presiden dan Wakil Presiden memegang jabatan selama lima tahun, dan sesudahnya dapat dipilih kembali dalam jabatan yang sama, hanya untuk satu kali masa jabatan' (maksimal 2 periode)."
+      },
+      {
+        id: 4,
+        topic: "Pemilihan Presiden & Wakil Presiden",
+        question: "Mekanisme pemilihan Presiden dan Wakil Presiden Republik Indonesia mengalami perubahan fundamental setelah amandemen UUD NRI Tahun 1945, yaitu...",
+        options: [
+          "Dipilih oleh MPR melalui musyawarah mufakat atau suara terbanyak",
+          "Dipilih oleh gabungan anggota DPR dan DPRD seluruh Indonesia",
+          "Diusulkan oleh Mahkamah Konstitusi dan disahkan dalam Sidang Istimewa MPR",
+          "Dipilih dalam satu pasangan secara langsung oleh rakyat melalui pemilihan umum",
+          "Dipilih oleh partai politik pemenang pemilu legislatif tanpa melalui pemilu presiden"
+        ],
+        correct: 3,
+        explanation: "Sesuai Pasal 6A ayat (1) hasil Amandemen III, Presiden dan Wakil Presiden dipilih dalam satu pasangan secara langsung oleh rakyat, bukan lagi dipilih oleh MPR."
+      },
+      {
+        id: 5,
+        topic: "Kekuasaan Membentuk Undang-Undang",
+        question: "Sebelum amandemen UUD 1945, Pasal 5 ayat (1) menyatakan bahwa Presiden memegang kekuasaan membentuk undang-undang dengan persetujuan DPR. Setelah amandemen, kekuasaan membentuk undang-undang bergeser kepada...",
+        options: [
+          "Mahkamah Agung (MA)",
+          "Dewan Perwakilan Daerah (DPD)",
+          "Majelis Permusyawaratan Rakyat (MPR)",
+          "Dewan Perwakilan Rakyat (DPR)",
+          "Komisi Yudisial (KY)"
+        ],
+        correct: 3,
+        explanation: "Pasal 20 ayat (1) hasil Amandemen I menegaskan bahwa Dewan Perwakilan Rakyat (DPR) memegang kekuasaan membentuk undang-undang, sedangkan Presiden berhak mengajukan rancangan undang-undang (Pasal 5 ayat 1)."
+      },
+      {
+        id: 6,
+        topic: "Penghapusan Lembaga Negara",
+        question: "Lembaga tinggi negara yang ada dalam struktur ketatanegaraan Indonesia sebelum amandemen UUD 1945, namun kemudian dihapuskan pada Amandemen Keempat tahun 2002 adalah...",
+        options: [
+          "Badan Pemeriksa Keuangan (BPK)",
+          "Dewan Pertimbangan Agung (DPA)",
+          "Mahkamah Agung (MA)",
+          "Dewan Perwakilan Rakyat (DPR)",
+          "Komisi Pemilihan Umum (KPU)"
+        ],
+        correct: 1,
+        explanation: "Dewan Pertimbangan Agung (DPA) yang sebelumnya diatur dalam Bab IV Pasal 16 dihapuskan pada Amandemen IV tahun 2002 karena dinilai kurang efektif, dan digantikan dengan dewan pertimbangan yang bertugas memberi nasihat kepada Presiden."
+      },
+      {
+        id: 7,
+        topic: "Lembaga Negara Baru",
+        question: "Berikut ini merupakan lembaga-lembaga negara baru yang lahir sebagai hasil dari amandemen UUD NRI Tahun 1945 adalah...",
+        options: [
+          "MPR, DPR, dan BPK",
+          "DPA, MA, dan Kejaksaan Agung",
+          "DPD, Mahkamah Konstitusi (MK), dan Komisi Yudisial (KY)",
+          "KPK, Ombudsman, dan Komnas HAM",
+          "Bank Indonesia, TNI, dan Polri"
+        ],
+        correct: 2,
+        explanation: "Amandemen UUD NRI Tahun 1945 melahirkan tiga lembaga baru dalam struktur konstitusi, yaitu Dewan Perwakilan Daerah (DPD), Mahkamah Konstitusi (MK), dan Komisi Yudisial (KY)."
+      },
+      {
+        id: 8,
+        topic: "Pengaturan Hak Asasi Manusia (HAM)",
+        question: "Pengaturan mengenai Hak Asasi Manusia (HAM) dalam UUD NRI Tahun 1945 sesudah amandemen mengalami perluasan yang sangat signifikan dan dimuat secara khusus dalam...",
+        options: [
+          "Bab I Pasal 1 sampai Pasal 3",
+          "Bab XA Pasal 28A sampai Pasal 28J",
+          "Bab XIII Pasal 31 dan Pasal 32",
+          "Bab XIV Pasal 33 dan Pasal 34",
+          "Aturan Tambahan Pasal I dan Pasal II"
+        ],
+        correct: 1,
+        explanation: "Sebelum amandemen, pengaturan HAM sangat terbatas (hanya beberapa pasal seperti Pasal 27, 28, 29). Setelah Amandemen II tahun 2000, HAM diatur sangat lengkap dalam Bab XA Pasal 28A hingga Pasal 28J."
+      },
+      {
+        id: 9,
+        topic: "Indonesia Negara Hukum",
+        question: "Sebelum amandemen, pernyataan bahwa Indonesia adalah negara yang berdasar atas hukum (rechtsstaat) hanya tercantum dalam bagian Penjelasan UUD 1945. Setelah amandemen, penegasan tersebut dimasukkan ke dalam batang tubuh/pasal, tepatnya pada...",
+        options: [
+          "Pasal 1 ayat (1)",
+          "Pasal 1 ayat (2)",
+          "Pasal 1 ayat (3)",
+          "Pasal 2 ayat (1)",
+          "Pasal 4 ayat (1)"
+        ],
+        correct: 2,
+        explanation: "Pasal 1 ayat (3) UUD NRI Tahun 1945 hasil Amandemen III menyatakan secara tegas: 'Negara Indonesia adalah negara hukum.'"
+      },
+      {
+        id: 10,
+        topic: "Ketentuan yang Tidak Dapat Diubah",
+        question: "Berdasarkan Pasal 37 ayat (5) UUD NRI Tahun 1945 hasil amandemen, ketentuan yang secara khusus tidak dapat dilakukan perubahan adalah mengenai...",
+        options: [
+          "Masa jabatan anggota DPR dan DPD",
+          "Tata cara pemilihan Kepala Daerah",
+          "Bentuk Negara Kesatuan Republik Indonesia",
+          "Jumlah kementerian negara",
+          "Susunan keanggotaan Mahkamah Agung"
+        ],
+        correct: 2,
+        explanation: "Pasal 37 ayat (5) menegaskan: 'Khusus mengenai bentuk Negara Kesatuan Republik Indonesia tidak dapat dilakukan perubahan.' Selain itu, Pembukaan UUD 1945 juga disepakati tidak boleh diubah."
+      },
+      {
+        id: 11,
+        topic: "Tahapan Amandemen UUD 1945",
+        question: "Perubahan (amandemen) UUD NRI Tahun 1945 dilakukan oleh MPR melalui empat tahapan sidang dalam kurun waktu...",
+        options: [
+          "1997 – 2000",
+          "1998 – 2001",
+          "1999 – 2002",
+          "2000 – 2003",
+          "2001 – 2004"
+        ],
+        correct: 2,
+        explanation: "Amandemen UUD NRI Tahun 1945 dilaksanakan sebanyak empat kali dalam Sidang MPR pada tahun 1999 (Amandemen I), tahun 2000 (Amandemen II), tahun 2001 (Amandemen III), dan tahun 2002 (Amandemen IV)."
+      },
+      {
+        id: 12,
+        topic: "Susunan Keanggotaan MPR",
+        question: "Perbedaan susunan keanggotaan MPR sebelum dan sesudah amandemen UUD NRI Tahun 1945 terletak pada...",
+        options: [
+          "Sebelum amandemen terdiri atas anggota DPR ditambah utusan daerah dan utusan golongan, sedangkan sesudah amandemen terdiri atas anggota DPR dan DPD yang dipilih melalui Pemilu",
+          "Sebelum amandemen seluruh anggota MPR diangkat Presiden, sedangkan sesudah amandemen dipilih oleh DPRD",
+          "Sebelum amandemen terdiri atas DPR dan DPD, sedangkan sesudah amandemen ditambah utusan golongan",
+          "Sesudah amandemen anggota MPR berasal dari perwakilan TNI/Polri dan tokoh masyarakat yang ditunjuk",
+          "Sebelum amandemen anggota MPR berjumlah 500 orang, sedangkan sesudah amandemen dibatasi maksimal 250 orang"
+        ],
+        correct: 0,
+        explanation: "Pasal 2 ayat (1) hasil amandemen menetapkan bahwa MPR terdiri atas anggota DPR dan anggota DPD yang seluruhnya dipilih melalui pemilihan umum (menghapus unsur utusan daerah dan utusan golongan yang sebelumnya diangkat)."
+      },
+      {
+        id: 13,
+        topic: "Anggaran Pendidikan Nasional",
+        question: "Dalam bidang pendidikan, Pasal 31 ayat (4) UUD NRI Tahun 1945 hasil amandemen mengamanatkan bahwa negara memprioritaskan anggaran pendidikan sekurang-kurangnya...",
+        options: [
+          "10% dari APBN dan APBD",
+          "15% dari APBN dan APBD",
+          "20% dari APBN serta dari APBD",
+          "25% dari pendapatan pajak nasional",
+          "30% dari belanja rutin pemerintah pusat"
+        ],
+        correct: 2,
+        explanation: "Pasal 31 ayat (4) hasil Amandemen IV mengamanatkan negara memprioritaskan anggaran pendidikan sekurang-kurangnya 20% dari APBN dan APBD untuk memenuhi kebutuhan penyelenggaraan pendidikan nasional."
+      },
+      {
+        id: 14,
+        topic: "Pertahanan dan Keamanan (Pasal 30)",
+        question: "Pasal 30 UUD NRI Tahun 1945 setelah amandemen mengatur pemisahan peran dan fungsi antara TNI dan Kepolisian Negara Republik Indonesia (Polri), yaitu...",
+        options: [
+          "TNI bertugas menjaga ketertiban lalu lintas, sedangkan Polri bertugas menjaga perbatasan negara",
+          "TNI sebagai alat negara bertugas mempertahankan, melindungi, dan memelihara keutuhan serta kedaulatan negara; sedangkan Polri menjaga keamanan dan ketertiban masyarakat",
+          "TNI dan Polri berada langsung di bawah komando Dewan Perwakilan Rakyat",
+          "Polri bertugas menghadapi ancaman militer asing, sedangkan TNI menangani tindak pidana umum",
+          "TNI dan Polri memiliki hak pilih aktif dalam pemilihan umum presiden dan legislatif"
+        ],
+        correct: 1,
+        explanation: "Pasal 30 ayat (3) dan (4) hasil Amandemen II memisahkan fungsi pertahanan (TNI) dan fungsi keamanan/ketertiban masyarakat serta penegakan hukum (Polri)."
+      },
+      {
+        id: 15,
+        topic: "Pemberhentian Presiden (Impeachment)",
+        question: "Setelah amandemen UUD NRI Tahun 1945 (Pasal 7A dan 7B), proses pemberhentian Presiden dan/atau Wakil Presiden dalam masa jabatannya tidak lagi semata-mata keputusan politik MPR, melainkan harus melalui pembuktian hukum oleh...",
+        options: [
+          "Komisi Pemberantasan Korupsi (KPK)",
+          "Dewan Pertimbangan Agung (DPA)",
+          "Mahkamah Konstitusi (MK)",
+          "Komisi Yudisial (KY)",
+          "Badan Pemeriksa Keuangan (BPK)"
+        ],
+        correct: 2,
+        explanation: "Berdasarkan Pasal 7B, usul pemberhentian Presiden/Wapres oleh DPR wajib diajukan terlebih dahulu kepada Mahkamah Konstitusi (MK) untuk memeriksa, mengadili, dan memutus pendapat DPR tersebut sebelum diputuskan oleh MPR."
+      },
+      {
+        id: 16,
+        topic: "Fungsi DPR (Pasal 20A)",
+        question: "Untuk memperkuat mekanisme checks and balances setelah amandemen, Pasal 20A ayat (1) UUD NRI Tahun 1945 menegaskan tiga fungsi utama Dewan Perwakilan Rakyat (DPR), yaitu...",
+        options: [
+          "Fungsi eksekutif, fungsi yudikatif, dan fungsi federatif",
+          "Fungsi legislasi, fungsi anggaran, dan fungsi pengawasan",
+          "Fungsi konsultatif, fungsi arbitrase, dan fungsi administratif",
+          "Fungsi pertahanan, fungsi diplomasi, dan fungsi moneter",
+          "Fungsi peradilan konstitusi, fungsi audit, dan fungsi penyidikan"
+        ],
+        correct: 1,
+        explanation: "Pasal 20A ayat (1) hasil Amandemen II menyebutkan secara eksplisit bahwa DPR memiliki fungsi legislasi (membentuk UU), fungsi anggaran (membahas/menyetujui APBN), dan fungsi pengawasan (mengawasi jalannya pemerintahan)."
+      },
+      {
+        id: 17,
+        topic: "Sistem Pemerintahan Presidensial",
+        question: "Salah satu kesepakatan dasar MPR dalam melakukan amandemen UUD 1945 adalah mempertegas sistem pemerintahan presidensial. Bukti penguatan sistem presidensial dalam UUD NRI Tahun 1945 pasca-amandemen adalah...",
+        options: [
+          "Presiden bertanggung jawab langsung kepada DPR dan dapat dijatuhkan kapan saja melalui mosi tidak percaya",
+          "Menteri-menteri negara diangkat oleh DPR dan bertanggung jawab kepada MPR",
+          "Presiden dipilih langsung oleh rakyat, memiliki masa jabatan tetap (fixed term), dan tidak dapat membubarkan DPR",
+          "Perdana Menteri diangkat oleh Presiden untuk menjalankan roda pemerintahan sehari-hari",
+          "Presiden memegang kekuasaan absolut atas lembaga peradilan dan legislatif"
+        ],
+        correct: 2,
+        explanation: "Ciri penguatan sistem presidensial pasca-amandemen meliputi: pemilihan presiden langsung oleh rakyat, masa jabatan tetap 5 tahun (tidak bisa dijatuhkan hanya karena perbedaan politik), dan Presiden tidak bisa membubarkan DPR (Pasal 7C)."
+      },
+      {
+        id: 18,
+        topic: "Rumusan Kedaulatan (Pasal 1 Ayat 2)",
+        question: "Bunyi Pasal 1 ayat (2) UUD NRI Tahun 1945 setelah mengalami perubahan ketiga pada tahun 2001 adalah...",
+        options: [
+          "Kedaulatan adalah di tangan rakyat, dan dilakukan sepenuhnya oleh Majelis Permusyawaratan Rakyat",
+          "Kedaulatan berada di tangan rakyat dan dilaksanakan menurut Undang-Undang Dasar",
+          "Kedaulatan berada di tangan pemerintah pusat dan daerah secara berimbang",
+          "Kedaulatan adalah di tangan hukum dan dijalankan oleh Mahkamah Agung serta Mahkamah Konstitusi",
+          "Kedaulatan berada di tangan rakyat dan dilaksanakan melalui referendum nasional"
+        ],
+        correct: 1,
+        explanation: "Sebelum amandemen: 'Kedaulatan adalah di tangan rakyat, dan dilakukan sepenuhnya oleh MPR.' Sesudah amandemen: 'Kedaulatan berada di tangan rakyat dan dilaksanakan menurut Undang-Undang Dasar.'"
+      },
+      {
+        id: 19,
+        topic: "Kekuasaan Kehakiman (Pasal 24)",
+        question: "Menurut Pasal 24 ayat (2) UUD NRI Tahun 1945 sesudah amandemen, kekuasaan kehakiman dilakukan oleh...",
+        options: [
+          "Mahkamah Agung saja sebagai satu-satunya puncak peradilan",
+          "Mahkamah Agung dan badan peradilan yang berada di bawahnya serta oleh sebuah Mahkamah Konstitusi",
+          "Kementerian Hukum dan Hak Asasi Manusia bersama Kejaksaan Agung",
+          "Komisi Yudisial dan Mahkamah Agung secara bersama-sama",
+          "Dewan Perwakilan Rakyat dan Mahkamah Konstitusi"
+        ],
+        correct: 1,
+        explanation: "Pasal 24 ayat (2) hasil Amandemen III menyatakan bahwa kekuasaan kehakiman dilakukan oleh sebuah Mahkamah Agung dan badan peradilan di bawahnya (peradilan umum, agama, militer, TUN) serta oleh sebuah Mahkamah Konstitusi."
+      },
+      {
+        id: 20,
+        topic: "Pemerintahan Daerah & Wilayah Negara",
+        question: "Setelah amandemen UUD NRI Tahun 1945, hubungan antara pemerintah pusat dan daerah diatur lebih rinci dalam Pasal 18, 18A, dan 18B yang menganut prinsip...",
+        options: [
+          "Sentralisasi kekuasaan penuh di ibu kota negara",
+          "Negara serikat (federal) dengan kedaulatan masing-masing negara bagian",
+          "Otonomi daerah seluas-luasnya dalam kerangka Negara Kesatuan Republik Indonesia",
+          "Penyerahan urusan pertahanan dan politik luar negeri kepada pemerintah kabupaten/kota",
+          "Penghapusan seluruh satuan pemerintahan daerah yang bersifat khusus atau istimewa"
+        ],
+        correct: 2,
+        explanation: "Pasal 18 ayat (5) hasil Amandemen II menegaskan bahwa pemerintahan daerah menjalankan otonomi seluas-luasnya, kecuali urusan pemerintahan yang oleh undang-undang ditentukan sebagai urusan Pemerintah Pusat."
+      },
+      {
+        id: 21,
+        topic: "Aturan Peralihan dan Aturan Tambahan",
+        question: "Bagaimana perbandingan jumlah pasal/ayat pada Aturan Peralihan dan Aturan Tambahan UUD 1945 sebelum dan sesudah amandemen?",
+        options: [
+          "Sebelum amandemen: 4 pasal Aturan Peralihan & 2 ayat Aturan Tambahan; Sesudah amandemen: 3 pasal Aturan Peralihan & 2 pasal Aturan Tambahan",
+          "Sebelum amandemen: 3 pasal Aturan Peralihan & 2 pasal Aturan Tambahan; Sesudah amandemen: 4 pasal Aturan Peralihan & 2 ayat Aturan Tambahan",
+          "Sebelum amandemen tidak memiliki Aturan Peralihan, baru ditambahkan setelah Amandemen IV",
+          "Sesudah amandemen Aturan Peralihan bertambah menjadi 10 pasal dan Aturan Tambahan menjadi 5 pasal",
+          "Jumlah Aturan Peralihan dan Aturan Tambahan sama persis baik sebelum maupun sesudah amandemen"
+        ],
+        correct: 0,
+        explanation: "Sebelum amandemen terdapat 4 pasal Aturan Peralihan dan 2 ayat Aturan Tambahan. Setelah Amandemen IV, diubah menjadi 3 pasal Aturan Peralihan dan 2 pasal Aturan Tambahan."
+      },
+      {
+        id: 22,
+        topic: "Atribut Negara (Bab XV)",
+        question: "Sebelum amandemen, Bab XV UUD 1945 hanya mengatur tentang Bendera dan Bahasa (Pasal 35 dan 36). Setelah Amandemen Kedua tahun 2000, bab tersebut diperluas sehingga juga mencakup pengaturan konstitusional mengenai...",
+        options: [
+          "Mata uang rupiah dan bank sentral",
+          "Lambang Negara (Garuda Pancasila dengan semboyan Bhinneka Tunggal Ika) dan Lagu Kebangsaan (Indonesia Raya)",
+          "Batas zona ekonomi eksklusif dan landas kontinen",
+          "Hari libur nasional dan kalender resmi negara",
+          "Tanda kehormatan, gelar, dan bintang jasa"
+        ],
+        correct: 1,
+        explanation: "Amandemen II menambahkan Pasal 36A (Lambang Negara ialah Garuda Pancasila dengan semboyan Bhinneka Tunggal Ika), Pasal 36B (Lagu Kebangsaan ialah Indonesia Raya), dan Pasal 36C."
+      },
+      {
+        id: 23,
+        topic: "Badan Pemeriksa Keuangan (BPK)",
+        question: "Menurut Pasal 23F ayat (1) UUD NRI Tahun 1945 hasil amandemen, anggota Badan Pemeriksa Keuangan (BPK) dipilih oleh...",
+        options: [
+          "Presiden secara langsung tanpa persetujuan lembaga lain",
+          "Mahkamah Agung atas usul Komisi Yudisial",
+          "DPR dengan memperhatikan pertimbangan DPD dan diresmikan oleh Presiden",
+          "MPR dalam Sidang Tahunan dengan suara terbanyak",
+          "Menteri Keuangan bersama Gubernur Bank Indonesia"
+        ],
+        correct: 2,
+        explanation: "Pasal 23F ayat (1) hasil Amandemen III mengatur bahwa anggota BPK dipilih oleh DPR dengan memperhatikan pertimbangan DPD dan diresmikan oleh Presiden."
+      },
+      {
+        id: 24,
+        topic: "Nasib Bagian Penjelasan UUD 1945",
+        question: "Mengapa bagian 'Penjelasan UUD 1945' ditiadakan dalam naskah resmi UUD NRI Tahun 1945 setelah Amandemen Keempat?",
+        options: [
+          "Karena bagian Penjelasan dianggap bertentangan dengan Pancasila",
+          "Karena semua materi normatif yang sebelumnya ada di dalam Penjelasan telah diangkat dan dimasukkan ke dalam pasal-pasal UUD",
+          "Karena bagian Penjelasan hanya berlaku pada masa pemerintahan Orde Lama",
+          "Karena Mahkamah Konstitusi melarang penggunaan penjelasan dalam konstitusi",
+          "Karena bagian Penjelasan digabungkan ke dalam Pembukaan UUD 1945"
+        ],
+        correct: 1,
+        explanation: "Salah satu kesepakatan dasar MPR adalah memasukkan hal-hal yang bersifat normatif dalam Penjelasan UUD 1945 (seperti Indonesia negara hukum, sistem pemerintahan) ke dalam pasal-pasal, sehingga bagian Penjelasan tidak diperlukan lagi."
+      },
+      {
+        id: 25,
+        topic: "Hak Prerogatif Presiden (Pasal 13 & 14)",
+        question: "Setelah amandemen UUD NRI Tahun 1945, kewenangan Presiden dalam memberi grasi dan rehabilitasi (Pasal 14 ayat 1) serta memberi amnesti dan abolisi (Pasal 14 ayat 2) mengalami pembatasan, yaitu...",
+        options: [
+          "Harus mendapat izin tertulis dari Ketua MPR terlebih dahulu",
+          "Grasi dan rehabilitasi memperhatikan pertimbangan Mahkamah Agung, sedangkan amnesti dan abolisi memperhatikan pertimbangan DPR",
+          "Grasi dan amnesti harus disetujui oleh Mahkamah Konstitusi",
+          "Seluruh pemberian grasi, amnesti, abolisi, dan rehabilitasi harus melalui referendum rakyat",
+          "Presiden tidak lagi memiliki wewenang memberikan grasi dan amnesti"
+        ],
+        correct: 1,
+        explanation: "Pasal 14 hasil Amandemen I membatasi hak prerogatif Presiden agar tidak disalahgunakan: memberi grasi dan rehabilitasi dengan memperhatikan pertimbangan MA, serta memberi amnesti dan abolisi dengan memperhatikan pertimbangan DPR."
+      },
+      {
+        id: 26,
+        topic: "Kesepakatan Dasar Amandemen",
+        question: "Berikut ini yang BUKAN termasuk dalam lima kesepakatan dasar Panitia Ad Hoc I MPR dalam melakukan perubahan UUD NRI Tahun 1945 adalah...",
+        options: [
+          "Tidak mengubah Pembukaan UUD NRI Tahun 1945",
+          "Tetap mempertahankan Negara Kesatuan Republik Indonesia",
+          "Mempertegas sistem pemerintahan presidensial",
+          "Mengubah sistem pemerintahan menjadi parlementer agar DPR lebih berkuasa",
+          "Melakukan perubahan dengan cara adendum"
+        ],
+        correct: 3,
+        explanation: "Justru sebaliknya, salah satu kesepakatan dasar MPR adalah mempertegas dan memperkuat sistem pemerintahan presidensial, bukan mengubahnya menjadi sistem parlementer."
+      },
+      {
+        id: 27,
+        topic: "Sistem Adendum",
+        question: "Perubahan UUD NRI Tahun 1945 dilakukan dengan cara 'adendum'. Makna dari cara adendum tersebut adalah...",
+        options: [
+          "Naskah asli UUD 1945 dibakar dan digantikan seluruhnya dengan konstitusi baru",
+          "Naskah asli UUD 1945 tetap dipertahankan, dan naskah perubahan dilekatkan pada naskah asli tersebut",
+          "Perubahan UUD dilakukan melalui Dekrit Presiden tanpa melibatkan sidang MPR",
+          "Setiap pasal yang diubah harus disahkan melalui pemungutan suara di seluruh provinsi",
+          "Naskah asli hanya berlaku di Pulau Jawa sedangkan naskah perubahan berlaku di luar Jawa"
+        ],
+        correct: 1,
+        explanation: "Adendum berarti naskah asli UUD 1945 tetap dipertahankan keutuhannya sebagai bagian dari sejarah konstitusi, sementara naskah perubahan (I, II, III, IV) dilekatkan menyatu di belakang naskah asli."
+      },
+      {
+        id: 28,
+        topic: "Larangan Pembubaran DPR (Pasal 7C)",
+        question: "Pasal 7C UUD NRI Tahun 1945 hasil Amandemen Ketiga secara tegas menyatakan bahwa...",
+        options: [
+          "Presiden berhak membekukan DPR apabila APBN tidak disetujui tepat waktu",
+          "Presiden tidak dapat membekukan dan/atau membubarkan Dewan Perwakilan Rakyat",
+          "DPR dapat membubarkan kabinet setiap enam bulan sekali",
+          "Presiden dapat membubarkan DPR setelah mendapat persetujuan Mahkamah Agung",
+          "MPR berhak membekukan DPR dan DPD dalam keadaan darurat sipil"
+        ],
+        correct: 1,
+        explanation: "Pasal 7C berbunyi: 'Presiden tidak dapat membekukan dan/atau membubarkan Dewan Perwakilan Rakyat.' Pasal ini mencegah terulangnya konflik konstitusional antara Presiden dan DPR."
+      },
+      {
+        id: 29,
+        topic: "Kewenangan Mahkamah Konstitusi",
+        question: "Berdasarkan Pasal 24C ayat (1) UUD NRI Tahun 1945 hasil amandemen, salah satu kewenangan utama Mahkamah Konstitusi (MK) yang mengadili pada tingkat pertama dan terakhir yang putusannya bersifat final adalah...",
+        options: [
+          "Menguji peraturan pemerintah dan peraturan daerah terhadap undang-undang",
+          "Mengadili perkara tindak pidana korupsi yang dilakukan pejabat negara",
+          "Menguji undang-undang terhadap Undang-Undang Dasar (judicial review)",
+          "Mengangkat dan memberhentikan hakim agung di Mahkamah Agung",
+          "Memeriksa pengelolaan dan tanggung jawab keuangan negara"
+        ],
+        correct: 2,
+        explanation: "MK berwenang menguji undang-undang terhadap UUD, memutus sengketa kewenangan lembaga negara yang kewenangannya diberikan oleh UUD, memutus pembubaran partai politik, dan memutus perselisihan tentang hasil pemilihan umum."
+      },
+      {
+        id: 30,
+        topic: "Pemilihan Umum (Bab VIIB Pasal 22E)",
+        question: "Sebelum amandemen, pengaturan mengenai Pemilihan Umum tidak tercantum secara eksplisit dalam pasal-pasal UUD 1945. Setelah Amandemen Ketiga, Pemilu diatur dalam Bab VIIB Pasal 22E yang menetapkan asas Pemilu dilaksanakan setiap lima tahun sekali secara...",
+        options: [
+          "Terbuka, cepat, efisien, transparan, dan akuntabel",
+          "Langsung, umum, bebas, rahasia, jujur, dan adil",
+          "Musyawarah, mufakat, perwakilan, serentak, dan damai",
+          "Langsung, berjenjang, rahasia, terpimpin, dan serentak",
+          "Umum, bebas, terbuka, proporsional, dan mengikat"
+        ],
+        correct: 1,
+        explanation: "Pasal 22E ayat (1) UUD NRI Tahun 1945 hasil Amandemen III menegaskan: 'Pemilihan umum dilaksanakan secara langsung, umum, bebas, rahasia, jujur, dan adil setiap lima tahun sekali.'"
+      }
+    ];
+
+    /**
+     * ============================================================================
+     * PROCEDURAL WEB AUDIO SYNTHESIZER (Tanpa file audio eksternal)
+     * ============================================================================
+     */
+    class SoundManager {
+      constructor() {
+        this.enabled = true;
+        this.ctx = null;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (AudioCtx) this.ctx = new AudioCtx();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      playTone(freq, type, duration, vol = 0.12, delay = 0) {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime + delay;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, now);
+
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.exponentialRampToValueAtTime(vol, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + duration + 0.02);
+      }
+
+      playJump() {
+        this.playTone(220, 'sine', 0.16, 0.1);
+        this.playTone(340, 'sine', 0.18, 0.08, 0.05);
+      }
+
+      playChestOpen() {
+        this.playTone(392.00, 'triangle', 0.25, 0.14, 0);     // G4
+        this.playTone(493.88, 'triangle', 0.25, 0.14, 0.08);  // B4
+        this.playTone(587.33, 'triangle', 0.35, 0.16, 0.16);  // D5
+      }
+
+      playCorrect() {
+        this.playTone(523.25, 'triangle', 0.22, 0.16, 0);     // C5
+        this.playTone(659.25, 'triangle', 0.22, 0.16, 0.1);   // E5
+        this.playTone(783.99, 'triangle', 0.25, 0.16, 0.2);   // G5
+        this.playTone(1046.50, 'sine', 0.45, 0.18, 0.3);      // C6
+      }
+
+      playWrong() {
+        this.playTone(210, 'sawtooth', 0.25, 0.1, 0);
+        this.playTone(165, 'sawtooth', 0.35, 0.1, 0.15);
+      }
+
+      playSonar() {
+        this.playTone(620, 'sine', 0.35, 0.12, 0);
+        this.playTone(930, 'sine', 0.55, 0.09, 0.12);
+      }
+    }
+
+    const soundFX = new SoundManager();
+
+    /**
+     * ============================================================================
+     * GAME STATE & GLOBAL VARIABLES (MASSIVE 1100x1100 REALISTIC WORLD)
+     * ============================================================================
+     */
+    const TOTAL_CHESTS = 30;
+    const ISLAND_RADIUS = 520; // Dunia diperluas drastis menjadi 1100x1100 unit!
+    const RADAR_DETECT_RANGE = 115; // Radar hanya mendeteksi peti dalam radius menengah agar menantang
+
+    let gameStarted = false;
+    let isModalOpen = false;
+    let score = 0;
+    let streak = 0;
+    let correctCount = 0;
+    let answeredCount = 0;
+    let activeChest = null;
+
+    // Three.js core objects
+    let scene, camera, renderer;
+    let clock = new THREE.Clock();
+    let playerGroup, playerBody, playerHead, leftLeg, rightLeg, leftArm, rightArm, lanternLight;
+    let waterMesh, cloudGroup, sunSphere;
+    let chests = [];
+    let colliders = [];   // { x, z, r, minY, maxY } untuk tabrakan samping pohon, tebing, batu
+    let platforms = [];   // { minX, maxX, minZ, maxZ, topY } untuk memanjat batu, candi, jembatan
+    let particles = [];
+    let swayFoliage = [];
+
+    // Player physics, stamina & sonar scanner
+    const playerState = {
+      pos: new THREE.Vector3(0, 0, 26),
+      vel: new THREE.Vector3(0, 0, 0),
+      yaw: Math.PI,
+      isGrounded: true,
+      walkCycle: 0,
+      speed: 17,
+      sprintMultiplier: 1.75,
+      stamina: 100,
+      exhausted: false,
+      sonarCooldown: 0,
+      sonarPulseTimer: 0,
+      sonarTargetChest: null
+    };
+
+    // Camera orbit controls
+    const camState = {
+      yaw: 0,
+      pitch: 0.38,
+      distance: 15,
+      isDragging: false,
+      lastX: 0,
+      lastY: 0
+    };
+
+    // Input states
+    const keys = {
+      w: false, a: false, s: false, d: false,
+      arrowup: false, arrowdown: false, arrowleft: false, arrowright: false,
+      shift: false, space: false
+    };
+
+    const joystick = {
+      active: false,
+      dx: 0,
+      dy: 0,
+      sprint: false
+    };
+
+    /**
+     * ============================================================================
+     * REALISTIC MULTI-BIOME TERRAIN HEIGHT & PLATFORM SUPPORT
+     * ============================================================================
+     */
+    function getBaseTerrainHeight(x, z) {
+      const dist = Math.sqrt(x * x + z * z);
+
+      // Central Nusantara Sanctuary Plaza (datar di tengah)
+      if (dist < 24) {
+        return 2.2;
+      }
+
+      // 4 Gugusan Pulau Karang Lepas Pantai (Offshore Rocky Islets)
+      const islets = [
+        { x: -395, z: -340, r: 62, h: 16 },
+        { x: 410, z: -320, r: 58, h: 14 },
+        { x: -370, z: 390, r: 65, h: 18 },
+        { x: 390, z: 375, r: 60, h: 15 }
+      ];
+      let isletBoost = -999;
+      for (let i = 0; i < islets.length; i++) {
+        const isl = islets[i];
+        const dIsl = Math.hypot(x - isl.x, z - isl.z);
+        if (dIsl < isl.r * 1.35) {
+          const t = Math.max(0, 1 - dIsl / (isl.r * 1.25));
+          const bumpy = Math.sin(x * 0.08) * Math.cos(z * 0.08) * 2.2;
+          const hVal = -2.2 + Math.pow(t, 1.45) * isl.h + bumpy * t;
+          if (hVal > isletBoost) isletBoost = hVal;
+        }
+      }
+
+      // Pegunungan & Bukit Terjal (North-West Peak, South-East Ridge, North-East Highland)
+      const mtn1 = Math.max(0, 1 - Math.hypot(x + 210, z + 210) / 175);
+      const mtn2 = Math.max(0, 1 - Math.hypot(x - 230, z - 190) / 165);
+      const mtn3 = Math.max(0, 1 - Math.hypot(x - 195, z + 235) / 150);
+      const mtn4 = Math.max(0, 1 - Math.hypot(x + 225, z - 205) / 155);
+
+      const mountainElevation =
+        Math.pow(mtn1, 1.7) * 34 +
+        Math.pow(mtn2, 1.7) * 29 +
+        Math.pow(mtn3, 1.8) * 26 +
+        Math.pow(mtn4, 1.75) * 28;
+
+      // Perbukitan alami & ngarai berliku
+      const ridge1 = Math.sin(x * 0.016) * Math.cos(z * 0.016) * 7.5;
+      const ridge2 = Math.sin(x * 0.038 + 1.1) * Math.sin(z * 0.035 - 0.8) * 3.4;
+      const detail = Math.cos(x * 0.09) * Math.sin(z * 0.09) * 0.9;
+
+      // Sungai / Laguna berliku yang membelah lembah timur-barat
+      const riverCurve = Math.sin(x * 0.012) * 55 - 85;
+      const distToRiver = Math.abs(z - riverCurve);
+      let riverCarve = 0;
+      if (dist > 38 && dist < 350 && distToRiver < 24) {
+        const rt = 1 - distToRiver / 24;
+        riverCarve = -Math.pow(rt, 1.8) * 6.8;
+      }
+
+      // Garis pantai utama pulau (berlekuk alami seperti teluk & tanjung)
+      const coastWobble = Math.sin(Math.atan2(z, x) * 6) * 26 + Math.cos(Math.atan2(z, x) * 11) * 14;
+      const effectiveRadius = 365 + coastWobble;
+      const normDist = Math.max(0, (dist - 24) / (effectiveRadius - 24));
+
+      let mainIslandH =
+        (1 - Math.pow(normDist, 2.3)) * 5.2 +
+        (mountainElevation + ridge1 + ridge2 + detail) * Math.max(0, 1 - Math.pow(normDist, 2.6)) +
+        riverCarve - 1.4;
+
+      // Transisi halus dari plaza tengah (24..42)
+      if (dist < 42) {
+        const blend = (dist - 24) / 18;
+        mainIslandH = 2.2 * (1 - blend) + mainIslandH * blend;
+      }
+
+      return Math.max(mainIslandH, isletBoost);
+    }
+
+    // Menggabungkan tinggi tanah + permukaan batu/candi/jembatan yang bisa dipanjat
+    function getWalkableHeight(x, z, currentY) {
+      let h = getBaseTerrainHeight(x, z);
+      for (let i = 0; i < platforms.length; i++) {
+        const p = platforms[i];
+        if (x >= p.minX && x <= p.maxX && z >= p.minZ && z <= p.maxZ) {
+          // Pemain bisa naik jika kakinya dekat atau di atas permukaan platform
+          if (currentY + 1.35 >= p.topY && p.topY > h) {
+            h = p.topY;
+          }
+        }
+      }
+      return h;
+    }
+
+    /**
+     * ============================================================================
+     * PROCEDURAL PBR TEXTURES & BUMP MAPS (REALISTIC GRASS, ROCK, SAND, STONE)
+     * ============================================================================
+     */
+    function createTerrainTexture() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 512;
+      canvas.height = 512;
+      const ctx = canvas.getContext('2d');
+
+      ctx.fillStyle = '#4b7c3b';
+      ctx.fillRect(0, 0, 512, 512);
+
+      // Multi-layered organic soil, moss, and grass blades
+      for (let i = 0; i < 16000; i++) {
+        const x = Math.random() * 512;
+        const y = Math.random() * 512;
+        const r = Math.random();
+        if (r < 0.25) ctx.fillStyle = 'rgba(28, 62, 26, 0.38)';
+        else if (r < 0.55) ctx.fillStyle = 'rgba(84, 136, 58, 0.34)';
+        else if (r < 0.82) ctx.fillStyle = 'rgba(116, 158, 72, 0.25)';
+        else ctx.fillStyle = 'rgba(92, 76, 52, 0.22)'; // earthy soil flecks
+        ctx.fillRect(x, y, 2 + Math.random() * 2, 2 + Math.random() * 3);
+      }
+
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(68, 68);
+      return tex;
+    }
+
+    function createTerrainBumpMap() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 256;
+      canvas.height = 256;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#808080';
+      ctx.fillRect(0, 0, 256, 256);
+
+      for (let i = 0; i < 7000; i++) {
+        const x = Math.random() * 256;
+        const y = Math.random() * 256;
+        const v = Math.floor(95 + Math.random() * 75);
+        ctx.fillStyle = `rgb(${v},${v},${v})`;
+        ctx.fillRect(x, y, 2, 2);
+      }
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(85, 85);
+      return tex;
+    }
+
+    function createRockTexture() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 256;
+      canvas.height = 256;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#57534e';
+      ctx.fillRect(0, 0, 256, 256);
+
+      for (let i = 0; i < 5000; i++) {
+        const x = Math.random() * 256;
+        const y = Math.random() * 256;
+        const r = Math.random();
+        ctx.fillStyle = r > 0.55 ? 'rgba(41, 37, 36, 0.42)' : r > 0.2 ? 'rgba(120, 113, 108, 0.35)' : 'rgba(63, 98, 18, 0.22)';
+        ctx.fillRect(x, y, 3 + Math.random() * 4, 2 + Math.random() * 3);
+      }
+
+      // Cracks & strata lines
+      ctx.strokeStyle = 'rgba(28, 25, 23, 0.45)';
+      ctx.lineWidth = 1.5;
+      for (let i = 0; i < 18; i++) {
+        ctx.beginPath();
+        let cx = Math.random() * 256;
+        let cy = Math.random() * 256;
+        ctx.moveTo(cx, cy);
+        for (let s = 0; s < 5; s++) {
+          cx += (Math.random() - 0.5) * 45;
+          cy += (Math.random() - 0.3) * 35;
+          ctx.lineTo(cx, cy);
+        }
+        ctx.stroke();
+      }
+
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      return tex;
+    }
+
+    function createStoneTexture() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 256;
+      canvas.height = 256;
+      const ctx = canvas.getContext('2d');
+
+      ctx.fillStyle = '#52525b';
+      ctx.fillRect(0, 0, 256, 256);
+
+      for (let i = 0; i < 4000; i++) {
+        const x = Math.random() * 256;
+        const y = Math.random() * 256;
+        ctx.fillStyle = Math.random() > 0.45 ? 'rgba(24,24,27,0.34)' : 'rgba(161,161,170,0.22)';
+        ctx.fillRect(x, y, 3, 3);
+      }
+
+      // Moss patches on ancient temple stone
+      for (let i = 0; i < 45; i++) {
+        ctx.fillStyle = 'rgba(54, 83, 20, 0.28)';
+        ctx.beginPath();
+        ctx.arc(Math.random() * 256, Math.random() * 256, 4 + Math.random() * 10, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.strokeStyle = 'rgba(9, 9, 11, 0.55)';
+      ctx.lineWidth = 2;
+      for (let y = 0; y < 256; y += 32) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(256, y);
+        ctx.stroke();
+        for (let x = (y % 64 === 0 ? 0 : 32); x < 256; x += 64) {
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          ctx.lineTo(x, y + 32);
+          ctx.stroke();
+        }
+      }
+
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      return tex;
+    }
+
+    function createWaterNormalTexture() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 256;
+      canvas.height = 256;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#8080ff';
+      ctx.fillRect(0, 0, 256, 256);
+
+      for (let y = 0; y < 256; y++) {
+        for (let x = 0; x < 256; x += 2) {
+          const w1 = Math.sin(x * 0.09 + y * 0.05) * 28;
+          const w2 = Math.cos(x * 0.04 - y * 0.11) * 28;
+          const r = Math.floor(128 + w1);
+          const g = Math.floor(128 + w2);
+          ctx.fillStyle = `rgb(${r},${g},245)`;
+          ctx.fillRect(x, y, 2, 1);
+        }
+      }
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(45, 45);
+      return tex;
+    }
+
+    /**
+     * ============================================================================
+     * INITIALIZE MASSIVE 3D REALISTIC WORLD
+     * ============================================================================
+     */
+    function init3DWorld() {
+      const canvas = document.getElementById('game-canvas');
+      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.08;
+
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x60a5fa);
+      scene.fog = new THREE.FogExp2(0x93c5fd, 0.00185); // Atmospheric distance haze
+
+      camera = new THREE.PerspectiveCamera(58, window.innerWidth / window.innerHeight, 0.5, 1100);
+
+      // Atmospheric Sky Dome + Golden Sun + Volumetric-style Clouds
+      buildSkyAndAtmosphere();
+
+      // Multi-layered Realistic Lighting
+      const hemiLight = new THREE.HemisphereLight(0xe0f2fe, 0x2d4c1e, 0.72);
+      hemiLight.position.set(0, 220, 0);
+      scene.add(hemiLight);
+
+      const sunLight = new THREE.DirectionalLight(0xfff7ed, 1.45);
+      sunLight.position.set(220, 290, 180);
+      sunLight.castShadow = true;
+      sunLight.shadow.mapSize.width = 2048;
+      sunLight.shadow.mapSize.height = 2048;
+      sunLight.shadow.camera.near = 20;
+      sunLight.shadow.camera.far = 850;
+      const d = 320;
+      sunLight.shadow.camera.left = -d;
+      sunLight.shadow.camera.right = d;
+      sunLight.shadow.camera.top = d;
+      sunLight.shadow.camera.bottom = -d;
+      sunLight.shadow.bias = -0.0004;
+      scene.add(sunLight);
+
+      // Realistic Ocean Water with Ripple Normal Map
+      const waterNormal = createWaterNormalTexture();
+      const waterGeo = new THREE.PlaneGeometry(2400, 2400, 48, 48);
+      const waterMat = new THREE.MeshStandardMaterial({
+        color: 0x0369a1,
+        normalMap: waterNormal,
+        normalScale: new THREE.Vector2(0.65, 0.65),
+        roughness: 0.14,
+        metalness: 0.55,
+        transparent: true,
+        opacity: 0.93
+      });
+      waterMesh = new THREE.Mesh(waterGeo, waterMat);
+      waterMesh.rotation.x = -Math.PI / 2;
+      waterMesh.position.y = -0.55;
+      scene.add(waterMesh);
+
+      // Massive 1160x1160 Multi-Biome Terrain
+      const terrainSize = 1160;
+      const segments = 220;
+      const terrainGeo = new THREE.PlaneGeometry(terrainSize, terrainSize, segments, segments);
+      terrainGeo.rotateX(-Math.PI / 2);
+
+      const posAttr = terrainGeo.attributes.position;
+      const colors = [];
+      const colorSand = new THREE.Color(0xe7d294);
+      const colorLushGrass = new THREE.Color(0x3f7a2c);
+      const colorDeepForest = new THREE.Color(0x27521d);
+      const colorCliffRock = new THREE.Color(0x686259);
+      const colorPeakStone = new THREE.Color(0x948d84);
+
+      for (let i = 0; i < posAttr.count; i++) {
+        const vx = posAttr.getX(i);
+        const vz = posAttr.getZ(i);
+        const vy = getBaseTerrainHeight(vx, vz);
+        posAttr.setY(i, vy);
+
+        // Hitung kemiringan lokal untuk mewarnai tebing curam dengan tekstur batu
+        const hx = getBaseTerrainHeight(vx + 2.5, vz);
+        const hz = getBaseTerrainHeight(vx, vz + 2.5);
+        const slope = Math.hypot(hx - vy, hz - vy) / 2.5;
+
+        let vColor = colorLushGrass.clone();
+        if (vy < 0.45) {
+          vColor.lerpColors(colorSand, colorLushGrass, Math.max(0, (vy + 0.6) / 1.05));
+        } else if (slope > 0.62) {
+          // Tebing curam otomatis menjadi batu gunung!
+          vColor.lerpColors(colorDeepForest, colorCliffRock, Math.min(1, (slope - 0.62) * 2.2));
+        } else if (vy > 17) {
+          vColor.lerpColors(colorCliffRock, colorPeakStone, Math.min(1, (vy - 17) / 16));
+        } else if (vy > 6) {
+          vColor.lerpColors(colorLushGrass, colorDeepForest, Math.min(1, (vy - 6) / 11));
+        }
+
+        colors.push(vColor.r, vColor.g, vColor.b);
+      }
+
+      terrainGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+      terrainGeo.computeVertexNormals();
+
+      const terrainMat = new THREE.MeshStandardMaterial({
+        map: createTerrainTexture(),
+        bumpMap: createTerrainBumpMap(),
+        bumpScale: 0.35,
+        vertexColors: true,
+        roughness: 0.88,
+        metalness: 0.04
+      });
+      const terrainMesh = new THREE.Mesh(terrainGeo, terrainMat);
+      terrainMesh.receiveShadow = true;
+      scene.add(terrainMesh);
+
+      // Build Landmarks, Temples, Rock Caves, Bridges & Forest
+      buildCentralMonument();
+      buildComplexTemplesAndBridges();
+      buildMegaBouldersAndCaves();
+      buildRealisticForestAndFoliage();
+      buildPlayerCharacter();
+
+      // Spawn 30 Cleverly Hidden & Hard-to-Reach Treasure Chests!
+      spawnHiddenTreasureChests();
+    }
+
+    /**
+     * Sky Gradient Dome, Glowing Sun & Floating Clouds
+     */
+    function buildSkyAndAtmosphere() {
+      const skyGeo = new THREE.SphereGeometry(950, 32, 20);
+      const skyCanvas = document.createElement('canvas');
+      skyCanvas.width = 32;
+      skyCanvas.height = 256;
+      const ctx = skyCanvas.getContext('2d');
+      const grad = ctx.createLinearGradient(0, 0, 0, 256);
+      grad.addColorStop(0.0, '#1d4ed8');
+      grad.addColorStop(0.38, '#38bdf8');
+      grad.addColorStop(0.52, '#bae6fd');
+      grad.addColorStop(0.65, '#fed7aa');
+      grad.addColorStop(1.0, '#0369a1');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 32, 256);
+
+      const skyTex = new THREE.CanvasTexture(skyCanvas);
+      const skyMat = new THREE.MeshBasicMaterial({ map: skyTex, side: THREE.BackSide, fog: false });
+      scene.add(new THREE.Mesh(skyGeo, skyMat));
+
+      // Sun sphere
+      sunSphere = new THREE.Mesh(
+        new THREE.SphereGeometry(24, 16, 16),
+        new THREE.MeshBasicMaterial({ color: 0xfef08a, fog: false })
+      );
+      sunSphere.position.set(360, 420, 290);
+      scene.add(sunSphere);
+
+      // Volumetric-style Cloud Clusters
+      cloudGroup = new THREE.Group();
+      const cloudMat = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        roughness: 0.95,
+        metalness: 0,
+        transparent: true,
+        opacity: 0.88
+      });
+
+      let seed = 99;
+      const rCloud = () => {
+        seed = (seed * 16807) % 2147483647;
+        return (seed - 1) / 2147483646;
+      };
+
+      for (let i = 0; i < 36; i++) {
+        const cluster = new THREE.Group();
+        const puffs = 4 + Math.floor(rCloud() * 4);
+        for (let p = 0; p < puffs; p++) {
+          const puff = new THREE.Mesh(
+            new THREE.DodecahedronGeometry(10 + rCloud() * 12, 1),
+            cloudMat
+          );
+          puff.position.set((p - puffs / 2) * 11, (rCloud() - 0.5) * 4, (rCloud() - 0.5) * 9);
+          puff.scale.y = 0.55;
+          cluster.add(puff);
+        }
+        cluster.position.set(
+          (rCloud() - 0.5) * 950,
+          115 + rCloud() * 55,
+          (rCloud() - 0.5) * 950
+        );
+        cloudGroup.add(cluster);
+      }
+      scene.add(cloudGroup);
+    }
+
+    /**
+     * Central Sanctuary Monument at (0, 0)
+     */
+    function buildCentralMonument() {
+      const stoneTex = createStoneTexture();
+      const stoneMat = new THREE.MeshStandardMaterial({ map: stoneTex, roughness: 0.78 });
+      const goldMat = new THREE.MeshStandardMaterial({ color: 0xfbbf24, metalness: 0.85, roughness: 0.2 });
+
+      const group = new THREE.Group();
+      group.position.set(0, 2.2, 0);
+
+      const base1 = new THREE.Mesh(new THREE.BoxGeometry(22, 0.8, 22), stoneMat);
+      base1.position.y = 0.4;
+      base1.receiveShadow = true;
+      group.add(base1);
+      platforms.push({ minX: -11, maxX: 11, minZ: -11, maxZ: 11, topY: 3.0 });
+
+      const base2 = new THREE.Mesh(new THREE.BoxGeometry(14, 1.0, 14), stoneMat);
+      base2.position.y = 1.3;
+      base2.receiveShadow = true;
+      group.add(base2);
+      platforms.push({ minX: -7, maxX: 7, minZ: -7, maxZ: 7, topY: 4.0 });
+
+      const pillar = new THREE.Mesh(new THREE.BoxGeometry(3.2, 11, 3.2), stoneMat);
+      pillar.position.y = 7.0;
+      pillar.castShadow = true;
+      pillar.receiveShadow = true;
+      group.add(pillar);
+
+      const crown = new THREE.Mesh(new THREE.OctahedronGeometry(1.8, 0), goldMat);
+      crown.position.y = 14.0;
+      crown.castShadow = true;
+      group.add(crown);
+
+      scene.add(group);
+      colliders.push({ x: 0, z: 0, r: 2.5 });
+    }
+
+    /**
+     * Build 6 Climbable Ancient Candi Complexes & Stone Bridges
+     */
+    function buildComplexTemplesAndBridges() {
+      const stoneTex = createStoneTexture();
+      const stoneMat = new THREE.MeshStandardMaterial({ map: stoneTex, roughness: 0.82 });
+
+      const templeLocations = [
+        { x: -135, z: -120 },
+        { x: 145, z: -115 },
+        { x: -155, z: 135 },
+        { x: 150, z: 145 },
+        { x: 0, z: -245 },
+        { x: 245, z: 15 }
+      ];
+
+      templeLocations.forEach((loc) => {
+        const y = getBaseTerrainHeight(loc.x, loc.z);
+        const temple = new THREE.Group();
+        temple.position.set(loc.x, y, loc.z);
+
+        // 3 tangga undakan yang bisa dipanjat pemain
+        const tiers = [
+          { w: 18, h: 1.5, yOff: 0.75 },
+          { w: 13, h: 1.5, yOff: 2.25 },
+          { w: 8.5, h: 1.5, yOff: 3.75 }
+        ];
+
+        tiers.forEach((t) => {
+          const mesh = new THREE.Mesh(new THREE.BoxGeometry(t.w, t.h, t.w), stoneMat);
+          mesh.position.y = t.yOff;
+          mesh.castShadow = true;
+          mesh.receiveShadow = true;
+          temple.add(mesh);
+
+          platforms.push({
+            minX: loc.x - t.w / 2,
+            maxX: loc.x + t.w / 2,
+            minZ: loc.z - t.w / 2,
+            maxZ: loc.z + t.w / 2,
+            topY: y + t.yOff + t.h / 2
+          });
+        });
+
+        // 4 Pilar sudut candi (peti bisa bersembunyi di balik pilar atas!)
+        const pillarOffsets = [[-3.1, -3.1], [3.1, -3.1], [-3.1, 3.1], [3.1, 3.1]];
+        pillarOffsets.forEach(([px, pz]) => {
+          const pil = new THREE.Mesh(new THREE.BoxGeometry(1.3, 4.2, 1.3), stoneMat);
+          pil.position.set(px, 6.6, pz);
+          pil.castShadow = true;
+          temple.add(pil);
+        });
+
+        // Atap Stupa Candi
+        const roof = new THREE.Mesh(new THREE.ConeGeometry(5.6, 4.2, 4), stoneMat);
+        roof.position.y = 10.6;
+        roof.rotation.y = Math.PI / 4;
+        roof.castShadow = true;
+        temple.add(roof);
+
+        scene.add(temple);
+      });
+
+      // Jembatan Batu Melengkung di atas Sungai/Lembah
+      const bridgeSpots = [
+        { x: -110, z: Math.sin(-110 * 0.012) * 55 - 85 },
+        { x: 95, z: Math.sin(95 * 0.012) * 55 - 85 }
+      ];
+      bridgeSpots.forEach((b) => {
+        const by = getBaseTerrainHeight(b.x, b.z + 24) + 0.6;
+        const deck = new THREE.Mesh(new THREE.BoxGeometry(9, 1.2, 46), stoneMat);
+        deck.position.set(b.x, by, b.z);
+        deck.castShadow = true;
+        deck.receiveShadow = true;
+        scene.add(deck);
+
+        platforms.push({
+          minX: b.x - 4.5,
+          maxX: b.x + 4.5,
+          minZ: b.z - 23,
+          maxZ: b.z + 23,
+          topY: by + 0.6
+        });
+      });
+    }
+
+    /**
+     * Build Massive Climbable Boulders, Cliff Ledges & Rock Caves (Tempat Persembunyian Peti)
+     */
+    function buildMegaBouldersAndCaves() {
+      const rockTex = createRockTexture();
+      const rockMat = new THREE.MeshStandardMaterial({
+        map: rockTex,
+        bumpMap: rockTex,
+        bumpScale: 0.45,
+        roughness: 0.9
+      });
+
+      // 8 Gua / Terowongan Batu Raksasa tempat peti bersembunyi di dalamnya
+      const caveCoords = [
+        { x: -95, z: -55, rot: 0.4 },
+        { x: 112, z: -68, rot: -0.6 },
+        { x: -185, z: 42, rot: 1.1 },
+        { x: 195, z: 75, rot: 2.2 },
+        { x: -65, z: 195, rot: 0.2 },
+        { x: 88, z: -215, rot: 1.5 },
+        { x: -255, z: -165, rot: -0.8 },
+        { x: 265, z: -155, rot: 0.9 }
+      ];
+
+      caveCoords.forEach((c) => {
+        const y = getBaseTerrainHeight(c.x, c.z);
+        const caveGroup = new THREE.Group();
+        caveGroup.position.set(c.x, y, c.z);
+        caveGroup.rotation.y = c.rot;
+
+        // Dinding kiri, kanan, belakang & atap batu gua
+        const leftWall = new THREE.Mesh(new THREE.DodecahedronGeometry(5.5, 1), rockMat);
+        leftWall.position.set(-4.8, 3.5, 0);
+        leftWall.scale.set(0.9, 1.3, 1.6);
+        leftWall.castShadow = true;
+        leftWall.receiveShadow = true;
+        caveGroup.add(leftWall);
+
+        const rightWall = new THREE.Mesh(new THREE.DodecahedronGeometry(5.5, 1), rockMat);
+        rightWall.position.set(4.8, 3.5, 0);
+        rightWall.scale.set(0.9, 1.3, 1.6);
+        rightWall.castShadow = true;
+        rightWall.receiveShadow = true;
+        caveGroup.add(rightWall);
+
+        const backWall = new THREE.Mesh(new THREE.DodecahedronGeometry(6.2, 1), rockMat);
+        backWall.position.set(0, 3.8, -5.2);
+        backWall.scale.set(1.4, 1.3, 0.9);
+        backWall.castShadow = true;
+        caveGroup.add(backWall);
+
+        const roofRock = new THREE.Mesh(new THREE.DodecahedronGeometry(6.8, 1), rockMat);
+        roofRock.position.set(0, 7.8, -1.0);
+        roofRock.scale.set(1.45, 0.65, 1.6);
+        roofRock.castShadow = true;
+        caveGroup.add(roofRock);
+
+        scene.add(caveGroup);
+      });
+
+      // 85 Batu Raksasa & Tangga Tebing Parkour yang tersebar di gunung & pantai
+      let seed = 1337;
+      const rand = () => {
+        seed = (seed * 16807) % 2147483647;
+        return (seed - 1) / 2147483646;
+      };
+
+      for (let i = 0; i < 85; i++) {
+        const angle = rand() * Math.PI * 2;
+        const radius = 34 + rand() * 340;
+        const bx = Math.cos(angle) * radius;
+        const bz = Math.sin(angle) * radius;
+        const by = getBaseTerrainHeight(bx, bz);
+
+        const w = 4.5 + rand() * 7.5;
+        const h = 3.2 + rand() * 6.5;
+        const d = 4.5 + rand() * 7.5;
+
+        const boulder = new THREE.Mesh(new THREE.DodecahedronGeometry(1, 1), rockMat);
+        boulder.scale.set(w * 0.62, h * 0.62, d * 0.62);
+        boulder.position.set(bx, by + h * 0.35, bz);
+        boulder.rotation.y = rand() * Math.PI;
+        boulder.castShadow = true;
+        boulder.receiveShadow = true;
+        scene.add(boulder);
+
+        // Tambahkan collider tengah & platform atas agar bisa dipanjat!
+        colliders.push({ x: bx, z: bz, r: Math.min(w, d) * 0.34 });
+        platforms.push({
+          minX: bx - w * 0.42,
+          maxX: bx + w * 0.42,
+          minZ: bz - d * 0.42,
+          maxZ: bz + d * 0.42,
+          topY: by + h * 0.78
+        });
+      }
+    }
+
+    /**
+     * Build Dense Realistic Tropical Forest, Palm Trees, Pine Trees & Swaying Bushes
+     */
+    function buildRealisticForestAndFoliage() {
+      const barkMat = new THREE.MeshStandardMaterial({ color: 0x4a3222, roughness: 0.92 });
+      const palmTrunkMat = new THREE.MeshStandardMaterial({ color: 0x6b533b, roughness: 0.88 });
+      const canopyMat1 = new THREE.MeshStandardMaterial({ color: 0x166534, roughness: 0.78 });
+      const canopyMat2 = new THREE.MeshStandardMaterial({ color: 0x14532d, roughness: 0.82 });
+      const pineMat = new THREE.MeshStandardMaterial({ color: 0x1e3f20, roughness: 0.85 });
+      const bushMat = new THREE.MeshStandardMaterial({ color: 0x3f6212, roughness: 0.75 });
+
+      let seed = 777;
+      const rand = () => {
+        seed = (seed * 16807) % 2147483647;
+        return (seed - 1) / 2147483646;
+      };
+
+      // 460 Pohon Realistis (Pohon Kelapa di pantai, Pohon Rimba di lembah, Pohon Cemara di gunung)
+      for (let i = 0; i < 460; i++) {
+        const angle = rand() * Math.PI * 2;
+        const radius = 28 + rand() * 440;
+        const x = Math.cos(angle) * radius;
+        const z = Math.sin(angle) * radius;
+        const y = getBaseTerrainHeight(x, z);
+
+        if (y < 0.15) continue; // Jangan tumbuh di dalam air laut
+
+        const treeGroup = new THREE.Group();
+        treeGroup.position.set(x, y, z);
+        const scale = 0.85 + rand() * 0.95;
+        treeGroup.scale.setScalar(scale);
+
+        if (y < 2.2) {
+          // Pohon Kelapa / Palem Pesisir
+          const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.44, 7.5, 7), palmTrunkMat);
+          trunk.position.y = 3.75;
+          trunk.rotation.z = (rand() - 0.5) * 0.22;
+          trunk.castShadow = true;
+          treeGroup.add(trunk);
+
+          for (let f = 0; f < 6; f++) {
+            const frond = new THREE.Mesh(new THREE.ConeGeometry(0.9, 3.8, 4), canopyMat1);
+            frond.position.set(Math.cos((f / 6) * Math.PI * 2) * 1.4, 7.3, Math.sin((f / 6) * Math.PI * 2) * 1.4);
+            frond.rotation.z = Math.PI * 0.42;
+            frond.rotation.y = (f / 6) * Math.PI * 2;
+            frond.castShadow = true;
+            treeGroup.add(frond);
+          }
+          colliders.push({ x, z, r: 0.55 * scale });
+        } else if (y > 14) {
+          // Pohon Cemara Pegunungan
+          const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.55, 5.0, 7), barkMat);
+          trunk.position.y = 2.5;
+          trunk.castShadow = true;
+          treeGroup.add(trunk);
+
+          for (let tier = 0; tier < 3; tier++) {
+            const cone = new THREE.Mesh(new THREE.ConeGeometry(2.8 - tier * 0.65, 4.2, 8), pineMat);
+            cone.position.y = 5.0 + tier * 2.3;
+            cone.castShadow = true;
+            treeGroup.add(cone);
+          }
+          colliders.push({ x, z, r: 0.7 * scale });
+        } else {
+          // Pohon Rimba Tropis Rindang
+          const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.72, 5.5, 8), barkMat);
+          trunk.position.y = 2.75;
+          trunk.castShadow = true;
+          treeGroup.add(trunk);
+
+          const c1 = new THREE.Mesh(new THREE.DodecahedronGeometry(3.1, 1), rand() > 0.5 ? canopyMat1 : canopyMat2);
+          c1.position.y = 6.2;
+          c1.castShadow = true;
+          treeGroup.add(c1);
+
+          const c2 = new THREE.Mesh(new THREE.DodecahedronGeometry(2.2, 1), canopyMat1);
+          c2.position.set(1.3, 7.6, 0.9);
+          c2.castShadow = true;
+          treeGroup.add(c2);
+
+          colliders.push({ x, z, r: 0.85 * scale });
+        }
+
+        scene.add(treeGroup);
+      }
+
+      // 380 Semak Belukar Lebat (Untuk menyembunyikan peti di balik semak hutan!)
+      for (let i = 0; i < 380; i++) {
+        const angle = rand() * Math.PI * 2;
+        const radius = 26 + rand() * 430;
+        const x = Math.cos(angle) * radius;
+        const z = Math.sin(angle) * radius;
+        const y = getBaseTerrainHeight(x, z);
+        if (y < 0.3) continue;
+
+        const bush = new THREE.Mesh(new THREE.DodecahedronGeometry(1.1 + rand() * 1.1, 1), bushMat);
+        bush.position.set(x, y + 0.65, z);
+        bush.scale.set(1.25, 0.85, 1.25);
+        bush.castShadow = true;
+        bush.receiveShadow = true;
+        scene.add(bush);
+        swayFoliage.push({ mesh: bush, phase: rand() * Math.PI * 2 });
+      }
+    }
+
+    /**
+     * Build Stylized 3D Indonesian Explorer Character with Adventure Lantern
+     */
+    function buildPlayerCharacter() {
+      playerGroup = new THREE.Group();
+
+      const shirtMat = new THREE.MeshStandardMaterial({ color: 0xdc2626, roughness: 0.5 });
+      const pantsMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.6 });
+      const skinMat = new THREE.MeshStandardMaterial({ color: 0xfdba74, roughness: 0.5 });
+      const hatMat = new THREE.MeshStandardMaterial({ color: 0xb45309, roughness: 0.65 });
+      const packMat = new THREE.MeshStandardMaterial({ color: 0x451a03, roughness: 0.75 });
+
+      playerBody = new THREE.Mesh(new THREE.BoxGeometry(0.95, 1.15, 0.55), shirtMat);
+      playerBody.position.y = 1.45;
+      playerBody.castShadow = true;
+      playerGroup.add(playerBody);
+
+      const backpack = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.88, 0.4), packMat);
+      backpack.position.set(0, 1.5, -0.42);
+      backpack.castShadow = true;
+      playerGroup.add(backpack);
+
+      // Lentera Penjelajah di Tas (membantu menerangi gua gelap!)
+      const lanternMesh = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.14, 0.14, 0.28, 8),
+        new THREE.MeshBasicMaterial({ color: 0xfef08a })
+      );
+      lanternMesh.position.set(0.45, 1.65, -0.45);
+      playerGroup.add(lanternMesh);
+
+      lanternLight = new THREE.PointLight(0xfde047, 0.9, 18);
+      lanternLight.position.set(0, 2.2, 0.5);
+      playerGroup.add(lanternLight);
+
+      playerHead = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.72, 0.72), skinMat);
+      playerHead.position.y = 2.45;
+      playerHead.castShadow = true;
+      playerGroup.add(playerHead);
+
+      const hatBrim = new THREE.Mesh(new THREE.CylinderGeometry(0.78, 0.78, 0.1, 16), hatMat);
+      hatBrim.position.y = 2.82;
+      hatBrim.castShadow = true;
+      playerGroup.add(hatBrim);
+
+      const hatTop = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.5, 0.36, 16), hatMat);
+      hatTop.position.y = 3.02;
+      hatTop.castShadow = true;
+      playerGroup.add(hatTop);
+
+      leftArm = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.95, 0.28), skinMat);
+      leftArm.position.set(-0.68, 1.45, 0);
+      leftArm.castShadow = true;
+      playerGroup.add(leftArm);
+
+      rightArm = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.95, 0.28), skinMat);
+      rightArm.position.set(0.68, 1.45, 0);
+      rightArm.castShadow = true;
+      playerGroup.add(rightArm);
+
+      leftLeg = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.9, 0.36), pantsMat);
+      leftLeg.position.set(-0.26, 0.45, 0);
+      leftLeg.castShadow = true;
+      playerGroup.add(leftLeg);
+
+      rightLeg = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.9, 0.36), pantsMat);
+      rightLeg.position.set(0.26, 0.45, 0);
+      rightLeg.castShadow = true;
+      playerGroup.add(rightLeg);
+
+      const startY = getWalkableHeight(playerState.pos.x, playerState.pos.z, 10);
+      playerState.pos.y = startY;
+      playerGroup.position.copy(playerState.pos);
+      scene.add(playerGroup);
+    }
+
+    /**
+     * ============================================================================
+     * SPAWN 30 HIDDEN & HARD-TO-REACH TREASURE CHESTS!
+     * ============================================================================
+     * Ditempatkan di lokasi menantang: dalam gua batu, balik batu raksasa,
+     * puncak gunung terjal, atas candi bertingkat, kolong jembatan batu,
+     * hingga gugusan pulau karang lepas pantai!
+     */
+    function spawnHiddenTreasureChests() {
+      chests.forEach(c => scene.remove(c.group));
+      chests = [];
+
+      const woodMat = new THREE.MeshStandardMaterial({ color: 0x5c2d0c, roughness: 0.6 });
+      const goldMat = new THREE.MeshStandardMaterial({
+        color: 0xfbbf24,
+        emissive: 0xd97706,
+        emissiveIntensity: 0.35,
+        metalness: 0.85,
+        roughness: 0.25
+      });
+      // Cahaya petunjuk yang halus & pendek (tidak terlihat dari ujung map!)
+      const subtleGlowMat = new THREE.MeshBasicMaterial({
+        color: 0xfde047,
+        transparent: true,
+        opacity: 0.14,
+        side: THREE.DoubleSide,
+        depthWrite: false
+      });
+
+      const rockTex = createRockTexture();
+      const coverRockMat = new THREE.MeshStandardMaterial({ map: rockTex, roughness: 0.9 });
+
+      // 30 Lokasi Spesifik yang Tersembunyi & Menantang
+      const secretSpots = [
+        // 1-8: Tersembunyi di dalam 8 Gua Batu Raksasa
+        { x: -95, z: -57, type: 'cave' },
+        { x: 112, z: -70, type: 'cave' },
+        { x: -187, z: 42, type: 'cave' },
+        { x: 197, z: 76, type: 'cave' },
+        { x: -65, z: 193, type: 'cave' },
+        { x: 86, z: -215, type: 'cave' },
+        { x: -253, z: -167, type: 'cave' },
+        { x: 263, z: -153, type: 'cave' },
+
+        // 9-14: Di Puncak & Balik Pilar 6 Candi Kuno (harus dipanjat!)
+        { x: -135, z: -123.5, type: 'temple' },
+        { x: 145, z: -111.5, type: 'temple' },
+        { x: -158.5, z: 135, type: 'temple' },
+        { x: 153.5, z: 145, type: 'temple' },
+        { x: 0, z: -248.5, type: 'temple' },
+        { x: 248.5, z: 15, type: 'temple' },
+
+        // 15-18: Tersembunyi di 4 Pulau Karang Lepas Pantai (harus menyeberang!)
+        { x: -395, z: -340, type: 'islet' },
+        { x: 410, z: -320, type: 'islet' },
+        { x: -370, z: 390, type: 'islet' },
+        { x: 390, z: 375, type: 'islet' },
+
+        // 19-22: Di Puncak 4 Pegunungan Terjal (harus mendaki & lompat tebing!)
+        { x: -210, z: -210, type: 'mountain' },
+        { x: 230, z: -190, type: 'mountain' },
+        { x: 195, z: 235, type: 'mountain' },
+        { x: -225, z: 205, type: 'mountain' },
+
+        // 23-24: Di Kolong Jembatan Batu Lembah Sungai
+        { x: -110, z: Math.sin(-110 * 0.012) * 55 - 85, type: 'under_bridge' },
+        { x: 95, z: Math.sin(95 * 0.012) * 55 - 85, type: 'under_bridge' },
+
+        // 25-30: Tersembunyi rapat di balik Formasi Batu Kembar & Semak Rimba Dalam
+        { x: -52, z: -135, type: 'hidden_rock' },
+        { x: 74, z: 128, type: 'hidden_rock' },
+        { x: -285, z: 25, type: 'hidden_rock' },
+        { x: 305, z: -45, type: 'hidden_rock' },
+        { x: -140, z: 295, type: 'hidden_rock' },
+        { x: 165, z: -305, type: 'hidden_rock' }
+      ];
+
+      secretSpots.forEach((spot, idx) => {
+        // Jika tipe hidden_rock, buat formasi 3 batu besar yang mengepung peti dari depan
+        if (spot.type === 'hidden_rock') {
+          const baseY = getBaseTerrainHeight(spot.x, spot.z);
+          const offsets = [
+            { dx: 0, dz: 3.1, s: 2.5 },
+            { dx: -2.8, dz: 1.2, s: 2.2 },
+            { dx: 2.8, dz: 1.2, s: 2.2 }
+          ];
+          offsets.forEach((o) => {
+            const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(o.s, 1), coverRockMat);
+            rock.position.set(spot.x + o.dx, baseY + o.s * 0.55, spot.z + o.dz);
+            rock.castShadow = true;
+            rock.receiveShadow = true;
+            scene.add(rock);
+            colliders.push({ x: spot.x + o.dx, z: spot.z + o.dz, r: o.s * 0.72 });
+          });
+        }
+
+        // Hitung ketinggian tepat (termasuk jika di atas undakan candi)
+        const y = spot.type === 'under_bridge'
+          ? getBaseTerrainHeight(spot.x, spot.z)
+          : getWalkableHeight(spot.x, spot.z, 50);
+
+        const group = new THREE.Group();
+        group.position.set(spot.x, y, spot.z);
+        group.rotation.y = (idx * 1.1) % (Math.PI * 2);
+
+        // Chest Base
+        const base = new THREE.Mesh(new THREE.BoxGeometry(1.55, 0.82, 1.05), woodMat);
+        base.position.y = 0.41;
+        base.castShadow = true;
+        base.receiveShadow = true;
+        group.add(base);
+
+        // Gold Trim Bands
+        const band = new THREE.Mesh(new THREE.BoxGeometry(1.61, 0.86, 0.2), goldMat);
+        band.position.y = 0.42;
+        group.add(band);
+
+        // Chest Lid
+        const lidPivot = new THREE.Group();
+        lidPivot.position.set(0, 0.82, -0.52);
+        const lidMesh = new THREE.Mesh(new THREE.BoxGeometry(1.58, 0.42, 1.08), woodMat);
+        lidMesh.position.set(0, 0.21, 0.52);
+        lidMesh.castShadow = true;
+        lidPivot.add(lidMesh);
+
+        const lidLock = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.34, 0.14), goldMat);
+        lidLock.position.set(0, 0.04, 1.07);
+        lidPivot.add(lidLock);
+        group.add(lidPivot);
+
+        // Shimmer pendek (hanya setinggi 3.5m agar tidak mencolok dari jauh)
+        const beamGeo = new THREE.CylinderGeometry(0.15, 0.65, 3.6, 10, 1, true);
+        const beam = new THREE.Mesh(beamGeo, subtleGlowMat);
+        beam.position.y = 2.0;
+        group.add(beam);
+
+        // Permata kecil berputar tepat di atas peti
+        const gem = new THREE.Mesh(new THREE.OctahedronGeometry(0.28, 0), goldMat);
+        gem.position.y = 1.65;
+        group.add(gem);
+
+        scene.add(group);
+
+        chests.push({
+          id: idx + 1,
+          questionData: QUESTIONS_BANK[idx],
+          group,
+          lidPivot,
+          beam,
+          gem,
+          x: spot.x,
+          y,
+          z: spot.z,
+          opened: false,
+          answeredCorrectly: null
+        });
+      });
+    }
+
+    /**
+     * ============================================================================
+     * PARTICLE BURST EFFECT (Saat membuka peti atau menjawab benar)
+     * ============================================================================
+     */
+    function spawnParticles(x, y, z, colorHex = 0xfbbf24, count = 26) {
+      const geo = new THREE.OctahedronGeometry(0.18, 0);
+      const mat = new THREE.MeshBasicMaterial({ color: colorHex });
+
+      for (let i = 0; i < count; i++) {
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.set(x, y + 1.2, z);
+        scene.add(mesh);
+
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 2 + Math.random() * 5;
+        particles.push({
+          mesh,
+          vx: Math.cos(angle) * speed,
+          vy: 4 + Math.random() * 6,
+          vz: Math.sin(angle) * speed,
+          life: 1.0
+        });
+      }
+    }
+
+    /**
+     * ============================================================================
+     * UI NOTIFICATIONS & FLOATING SCORE
+     * ============================================================================
+     */
+    function showToast(text, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const el = document.createElement('div');
+      const styles = {
+        info: 'bg-slate-900/90 border-amber-400/50 text-amber-200',
+        success: 'bg-emerald-950/90 border-emerald-400/60 text-emerald-200',
+        error: 'bg-rose-950/90 border-rose-400/60 text-rose-200'
+      };
+      el.className = `px-4 py-2 rounded-2xl border backdrop-blur-md text-xs sm:text-sm font-semibold shadow-xl transition-all duration-300 ${styles[type] || styles.info}`;
+      el.textContent = text;
+      container.appendChild(el);
+
+      setTimeout(() => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(-10px)';
+        setTimeout(() => el.remove(), 300);
+      }, 2600);
+    }
+
+    function showFloatingScore(text, isPositive = true) {
+      const layer = document.getElementById('floating-score-layer');
+      const el = document.createElement('div');
+      el.className = `floating-score fixed left-1/2 top-1/3 -translate-x-1/2 font-extrabold text-2xl sm:text-3xl drop-shadow-lg ${isPositive ? 'text-amber-300' : 'text-rose-400'}`;
+      el.textContent = text;
+      layer.appendChild(el);
+      setTimeout(() => el.remove(), 1450);
+    }
+
+    function updateHUD() {
+      document.getElementById('hud-score').textContent = score;
+      document.getElementById('hud-found').textContent = answeredCount;
+
+      const streakBadge = document.getElementById('streak-badge');
+      if (streak >= 2) {
+        streakBadge.classList.remove('hidden');
+        streakBadge.classList.add('flex');
+        document.getElementById('hud-streak').textContent = `${streak}x`;
+      } else {
+        streakBadge.classList.add('hidden');
+        streakBadge.classList.remove('flex');
+      }
+    }
+
+    /**
+     * ============================================================================
+     * QUIZ MODAL LOGIC (5 PILIHAN: A, B, C, D, E)
+     * ============================================================================
+     */
+    function openChestQuiz(chest) {
+      if (!chest || chest.opened || isModalOpen) return;
+
+      activeChest = chest;
+      isModalOpen = true;
+      soundFX.playChestOpen();
+
+      // Hide interaction prompt
+      document.getElementById('interact-prompt').classList.add('hidden');
+
+      const q = chest.questionData;
+      document.getElementById('quiz-chest-id').textContent = chest.id;
+      document.getElementById('quiz-category').textContent = `Topik: ${q.topic}`;
+      document.getElementById('quiz-question').textContent = q.question;
+
+      const optionsContainer = document.getElementById('quiz-options');
+      optionsContainer.innerHTML = '';
+
+      const letters = ['A', 'B', 'C', 'D', 'E'];
+
+      q.options.forEach((optText, idx) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'option-btn w-full text-left p-3.5 sm:p-4 rounded-2xl bg-slate-800/85 hover:bg-slate-700/95 border border-slate-600/70 hover:border-amber-400/70 transition flex items-start gap-3.5 cursor-pointer group';
+        btn.innerHTML = `
+          <span class="w-8 h-8 rounded-xl bg-slate-900 group-hover:bg-amber-500 group-hover:text-slate-950 border border-slate-600 group-hover:border-amber-400 flex items-center justify-center font-extrabold text-sm text-amber-300 shrink-0 transition">
+            ${letters[idx]}
+          </span>
+          <span class="text-sm sm:text-base text-slate-100 leading-snug pt-0.5">${optText}</span>
+        `;
+        btn.addEventListener('click', () => handleAnswerSelection(idx, btn));
+        optionsContainer.appendChild(btn);
+      });
+
+      // Reset feedback & footer
+      const feedbackBox = document.getElementById('quiz-feedback');
+      feedbackBox.classList.add('hidden');
+      document.getElementById('quiz-footer').classList.add('hidden');
+      document.getElementById('quiz-footer').classList.remove('flex');
+
+      const modal = document.getElementById('quiz-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function handleAnswerSelection(selectedIdx, clickedBtn) {
+      if (!activeChest || activeChest.opened) return;
+
+      const q = activeChest.questionData;
+      const isCorrect = selectedIdx === q.correct;
+      const allBtns = document.querySelectorAll('.option-btn');
+
+      // Disable all option buttons
+      allBtns.forEach((btn, idx) => {
+        btn.disabled = true;
+        btn.classList.remove('hover:bg-slate-700/95', 'hover:border-amber-400/70', 'cursor-pointer');
+        btn.classList.add('cursor-default');
+
+        if (idx === q.correct) {
+          btn.classList.remove('bg-slate-800/85', 'border-slate-600/70');
+          btn.classList.add('bg-emerald-900/75', 'border-emerald-400', 'ring-2', 'ring-emerald-400/40');
+          btn.querySelector('span:first-child').classList.add('bg-emerald-400', 'text-slate-950', 'border-emerald-300');
+        } else if (idx === selectedIdx && !isCorrect) {
+          btn.classList.remove('bg-slate-800/85', 'border-slate-600/70');
+          btn.classList.add('bg-rose-900/75', 'border-rose-400', 'ring-2', 'ring-rose-400/40');
+          btn.querySelector('span:first-child').classList.add('bg-rose-500', 'text-white', 'border-rose-400');
+        } else {
+          btn.classList.add('opacity-55');
+        }
+      });
+
+      // Mark chest opened
+      activeChest.opened = true;
+      activeChest.answeredCorrectly = isCorrect;
+      activeChest.beam.visible = false;
+      activeChest.gem.visible = false;
+      answeredCount++;
+
+      const feedbackBox = document.getElementById('quiz-feedback');
+      const feedbackTitle = document.getElementById('feedback-title');
+      const feedbackExp = document.getElementById('feedback-explanation');
+
+      feedbackBox.classList.remove('hidden', 'bg-emerald-950/70', 'border-emerald-500/40', 'bg-rose-950/70', 'border-rose-500/40');
+
+      if (isCorrect) {
+        streak++;
+        correctCount++;
+        const bonus = streak >= 2 ? (streak - 1) * 20 : 0;
+        const gained = 100 + bonus;
+        score += gained;
+
+        soundFX.playCorrect();
+        spawnParticles(activeChest.x, activeChest.y, activeChest.z, 0xfbbf24, 32);
+        showFloatingScore(`+${gained} Poin!`, true);
+
+        feedbackBox.classList.add('bg-emerald-950/75', 'border-emerald-500/50');
+        feedbackTitle.className = 'font-extrabold text-base text-emerald-300 mb-1';
+        feedbackTitle.textContent = bonus > 0
+          ? `✅ Jawaban Benar! (+100 Poin + ${bonus} Bonus Combo)`
+          : `✅ Jawaban Benar! (+100 Poin)`;
+      } else {
+        streak = 0;
+        soundFX.playWrong();
+        spawnParticles(activeChest.x, activeChest.y, activeChest.z, 0xf43f5e, 16);
+        showFloatingScore(`Kurang Tepat!`, false);
+
+        feedbackBox.classList.add('bg-rose-950/75', 'border-rose-500/50');
+        feedbackTitle.className = 'font-extrabold text-base text-rose-300 mb-1';
+        const letters = ['A', 'B', 'C', 'D', 'E'];
+        feedbackTitle.textContent = `❌ Kurang Tepat! Jawaban yang benar adalah ${letters[q.correct]}.`;
+      }
+
+      feedbackExp.textContent = `Pembahasan: ${q.explanation}`;
+
+      updateHUD();
+
+      const footer = document.getElementById('quiz-footer');
+      footer.classList.remove('hidden');
+      footer.classList.add('flex');
+    }
+
+    function closeQuizModal() {
+      const modal = document.getElementById('quiz-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      isModalOpen = false;
+      activeChest = null;
+
+      // Check if all 30 chests have been discovered!
+      if (answeredCount >= TOTAL_CHESTS) {
+        setTimeout(() => openResultModal(), 450);
+      }
+    }
+
+    /**
+     * ============================================================================
+     * RESULT / VICTORY MODAL
+     * ============================================================================
+     */
+    function openResultModal() {
+      isModalOpen = true;
+      document.getElementById('final-score').textContent = score;
+      document.getElementById('final-correct').textContent = correctCount;
+
+      const accuracy = (correctCount / TOTAL_CHESTS) * 100;
+      let grade = 'D';
+      let msg = 'Terus semangat mempelajari UUD NRI Tahun 1945! Coba jelajahi kembali pulau untuk berlatih.';
+      let trophy = '🧭';
+
+      if (accuracy >= 85) {
+        grade = 'A+';
+        msg = 'Luar Biasa! Kamu adalah Pakar Konstitusi Nusantara sejati yang menguasai materi UUD NRI Tahun 1945 sebelum dan sesudah amandemen!';
+        trophy = '👑';
+      } else if (accuracy >= 70) {
+        grade = 'B';
+        msg = 'Hebat! Pemahamanmu tentang perubahan UUD NRI Tahun 1945 sudah sangat baik.';
+        trophy = '🏆';
+      } else if (accuracy >= 50) {
+        grade = 'C';
+        msg = 'Cukup Baik! Baca kembali Ringkasan Materi UUD 1945 untuk memperdalam pemahamanmu.';
+        trophy = '🎖️';
+      }
+
+      document.getElementById('final-grade').textContent = grade;
+      document.getElementById('final-message').textContent = msg;
+      document.getElementById('result-trophy').textContent = trophy;
+
+      const modal = document.getElementById('result-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function restartGame() {
+      score = 0;
+      streak = 0;
+      correctCount = 0;
+      answeredCount = 0;
+      activeChest = null;
+      isModalOpen = false;
+
+      playerState.pos.set(0, getTerrainHeight(0, 18), 18);
+      playerState.vel.set(0, 0, 0);
+      playerState.yaw = Math.PI;
+      camState.yaw = 0;
+
+      spawnTreasureChests();
+      updateHUD();
+
+      document.getElementById('result-modal').classList.add('hidden');
+      document.getElementById('result-modal').classList.remove('flex');
+      showToast('Petualangan baru dimulai! Temukan 30 peti harta karun.', 'info');
+    }
+
+    /**
+     * ============================================================================
+     * RADAR MINIMAP RENDERING
+     * ============================================================================
+     */
+    function renderMinimap() {
+      const canvas = document.getElementById('minimap-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+      const cx = w / 2;
+      const cy = h / 2;
+      const scale = (w / 2) / (ISLAND_RADIUS * 1.12);
+
+      ctx.clearRect(0, 0, w, h);
+
+      // Ocean background
+      ctx.fillStyle = '#07192e';
+      ctx.fillRect(0, 0, w, h);
+
+      // Island silhouette
+      ctx.beginPath();
+      ctx.arc(cx, cy, ISLAND_RADIUS * scale, 0, Math.PI * 2);
+      ctx.fillStyle = '#1e3a2f';
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#fde68a';
+      ctx.stroke();
+
+      // Radar grid rings
+      ctx.strokeStyle = 'rgba(251, 191, 36, 0.14)';
+      ctx.lineWidth = 1;
+      [0.33, 0.66].forEach(r => {
+        ctx.beginPath();
+        ctx.arc(cx, cy, ISLAND_RADIUS * scale * r, 0, Math.PI * 2);
+        ctx.stroke();
+      });
+
+      // Draw Chests
+      let minDist = Infinity;
+      chests.forEach(c => {
+        const mx = cx + c.x * scale;
+        const my = cy + c.z * scale;
+
+        if (!c.opened) {
+          const dist = Math.hypot(c.x - playerState.pos.x, c.z - playerState.pos.z);
+          if (dist < minDist) minDist = dist;
+
+          ctx.beginPath();
+          ctx.arc(mx, my, 3.2, 0, Math.PI * 2);
+          ctx.fillStyle = '#fbbf24';
+          ctx.fill();
+        } else {
+          ctx.beginPath();
+          ctx.arc(mx, my, 2.2, 0, Math.PI * 2);
+          ctx.fillStyle = c.answeredCorrectly ? '#34d399' : '#64748b';
+          ctx.fill();
+        }
+      });
+
+      // Update nearest distance badge
+      const distBadge = document.getElementById('nearest-dist');
+      if (minDist < Infinity) {
+        distBadge.textContent = `${Math.round(minDist)}m`;
+      } else {
+        distBadge.textContent = '30/30';
+      }
+
+      // Draw Player Arrow
+      const px = cx + playerState.pos.x * scale;
+      const py = cy + playerState.pos.z * scale;
+
+      ctx.save();
+      ctx.translate(px, py);
+      ctx.rotate(-playerState.yaw + Math.PI);
+      ctx.beginPath();
+      ctx.moveTo(0, -6);
+      ctx.lineTo(4.5, 5);
+      ctx.lineTo(0, 2.5);
+      ctx.lineTo(-4.5, 5);
+      ctx.closePath();
+      ctx.fillStyle = '#f43f5e';
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    /**
+     * ============================================================================
+     * SONAR PULSE ABILITY [Tombol Q] — Melacak arah peti terdekat secara singkat
+     * ============================================================================
+     */
+    function triggerSonarPulse() {
+      if (!gameStarted || isModalOpen) return;
+      if (playerState.sonarCooldown > 0) {
+        showToast(`Sonar sedang mengisi daya (${Math.ceil(playerState.sonarCooldown)} dtk)...`, 'info');
+        return;
+      }
+
+      let nearest = null;
+      let minDist = Infinity;
+      for (let i = 0; i < chests.length; i++) {
+        const c = chests[i];
+        if (c.opened) continue;
+        const d = Math.hypot(c.x - playerState.pos.x, c.z - playerState.pos.z);
+        if (d < minDist) {
+          minDist = d;
+          nearest = c;
+        }
+      }
+
+      if (!nearest) return;
+
+      soundFX.playSonar();
+      playerState.sonarCooldown = 12; // Cooldown 12 detik
+      playerState.sonarPulseTimer = 4.5; // Gelombang sonar aktif di radar selama 4.5 detik
+      playerState.sonarTargetChest = nearest;
+
+      // Hitung arah mata angin relatif terhadap posisi pemain
+      const dx = nearest.x - playerState.pos.x;
+      const dz = nearest.z - playerState.pos.z;
+      const angleDeg = (Math.atan2(dx, -dz) * 180 / Math.PI + 360) % 360;
+      const dirs = ['Utara', 'Timur Laut', 'Timur', 'Tenggara', 'Selatan', 'Barat Daya', 'Barat', 'Barat Laut'];
+      const dirName = dirs[Math.round(angleDeg / 45) % 8];
+
+      showToast(`📡 Sinyal Peti #${nearest.id} terdeteksi ${Math.round(minDist)}m ke arah ${dirName}!`, 'info');
+    }
+
+    /**
+     * ============================================================================
+     * RADAR MINIMAP RENDERING (Jarak Deteksi Menengah + Sonar Ping)
+     * ============================================================================
+     */
+    function renderMinimap() {
+      const canvas = document.getElementById('minimap-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+      const cx = w / 2;
+      const cy = h / 2;
+      const scale = (w / 2) / (ISLAND_RADIUS * 1.06);
+
+      ctx.clearRect(0, 0, w, h);
+
+      // Ocean background
+      ctx.fillStyle = '#061526';
+      ctx.fillRect(0, 0, w, h);
+
+      // Main Island silhouette
+      ctx.beginPath();
+      ctx.arc(cx, cy, 365 * scale, 0, Math.PI * 2);
+      ctx.fillStyle = '#1b382a';
+      ctx.fill();
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = '#fde68a';
+      ctx.stroke();
+
+      // 4 Offshore Islets on Minimap
+      const islets = [
+        { x: -395, z: -340, r: 52 },
+        { x: 410, z: -320, r: 48 },
+        { x: -370, z: 390, r: 54 },
+        { x: 390, z: 375, r: 50 }
+      ];
+      islets.forEach(isl => {
+        ctx.beginPath();
+        ctx.arc(cx + isl.x * scale, cy + isl.z * scale, isl.r * scale, 0, Math.PI * 2);
+        ctx.fillStyle = '#244736';
+        ctx.fill();
+      });
+
+      // Radar Detection Circle around Player
+      const px = cx + playerState.pos.x * scale;
+      const py = cy + playerState.pos.z * scale;
+
+      ctx.beginPath();
+      ctx.arc(px, py, RADAR_DETECT_RANGE * scale, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.08)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Draw Chests (Hanya muncul di radar jika dalam radius deteksi atau sedang di-ping Sonar!)
+      let minDist = Infinity;
+      chests.forEach(c => {
+        const mx = cx + c.x * scale;
+        const my = cy + c.z * scale;
+        const dist = Math.hypot(c.x - playerState.pos.x, c.z - playerState.pos.z);
+
+        if (!c.opened) {
+          if (dist < minDist) minDist = dist;
+
+          const isPinged = playerState.sonarPulseTimer > 0 && playerState.sonarTargetChest === c;
+          if (dist <= RADAR_DETECT_RANGE || isPinged) {
+            ctx.beginPath();
+            ctx.arc(mx, my, isPinged ? 4.2 : 2.8, 0, Math.PI * 2);
+            ctx.fillStyle = isPinged ? '#38bdf8' : '#fbbf24';
+            ctx.fill();
+          }
+        } else {
+          ctx.beginPath();
+          ctx.arc(mx, my, 2.0, 0, Math.PI * 2);
+          ctx.fillStyle = c.answeredCorrectly ? '#34d399' : '#64748b';
+          ctx.fill();
+        }
+      });
+
+      // Expanding Sonar Wave Ring
+      if (playerState.sonarPulseTimer > 0) {
+        const waveProgress = 1 - (playerState.sonarPulseTimer % 1.5) / 1.5;
+        ctx.beginPath();
+        ctx.arc(px, py, waveProgress * 58, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(56, 189, 248, ${1 - waveProgress})`;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+
+      // Update nearest distance badge
+      const distBadge = document.getElementById('nearest-dist');
+      if (minDist < Infinity) {
+        distBadge.textContent = minDist <= RADAR_DETECT_RANGE ? `${Math.round(minDist)}m` : 'Jauh';
+      } else {
+        distBadge.textContent = '30/30';
+      }
+
+      // Draw Player Arrow
+      ctx.save();
+      ctx.translate(px, py);
+      ctx.rotate(-playerState.yaw + Math.PI);
+      ctx.beginPath();
+      ctx.moveTo(0, -5.5);
+      ctx.lineTo(4, 4.5);
+      ctx.lineTo(0, 2);
+      ctx.lineTo(-4, 4.5);
+      ctx.closePath();
+      ctx.fillStyle = '#f43f5e';
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    /**
+     * ============================================================================
+     * GAME LOOP: PHYSICS, CLIMBING PLATFORMS, STAMINA, CAMERA & ANIMATIONS
+     * ============================================================================
+     */
+    let nearestUnopenedChest = null;
+
+    function updateSimulation(dt) {
+      const elapsed = clock.getElapsedTime();
+
+      // Animate ocean ripples & gentle swell
+      if (waterMesh) {
+        waterMesh.position.y = -0.55 + Math.sin(elapsed * 1.3) * 0.09;
+        if (waterMesh.material.normalMap) {
+          waterMesh.material.normalMap.offset.x += dt * 0.015;
+          waterMesh.material.normalMap.offset.y += dt * 0.01;
+        }
+      }
+
+      // Drift volumetric clouds slowly across the sky
+      if (cloudGroup) {
+        cloudGroup.children.forEach((cloud, i) => {
+          cloud.position.x += dt * (1.2 + (i % 4) * 0.35);
+          if (cloud.position.x > 520) cloud.position.x = -520;
+        });
+      }
+
+      // Subtle wind sway on forest bushes
+      for (let i = 0; i < swayFoliage.length; i += 2) {
+        const f = swayFoliage[i];
+        f.mesh.rotation.z = Math.sin(elapsed * 1.8 + f.phase) * 0.04;
+      }
+
+      // Animate Treasure Chests (subtle close-range shimmer)
+      chests.forEach((c, idx) => {
+        if (!c.opened) {
+          const dist = Math.hypot(c.x - playerState.pos.x, c.z - playerState.pos.z);
+          c.gem.rotation.y = elapsed * 2.2 + idx;
+          c.gem.position.y = 1.65 + Math.sin(elapsed * 3 + idx) * 0.16;
+          // Pilar cahaya hanya terlihat jelas saat pemain sudah mendekat (< 42 meter)
+          const visibilityFactor = THREE.MathUtils.clamp(1 - (dist - 12) / 34, 0.02, 0.24);
+          c.beam.material.opacity = visibilityFactor;
+        } else {
+          c.lidPivot.rotation.x = THREE.MathUtils.lerp(c.lidPivot.rotation.x, -Math.PI * 0.58, dt * 6);
+        }
+      });
+
+      // Update particles
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.life -= dt * 1.1;
+        if (p.life <= 0) {
+          scene.remove(p.mesh);
+          particles.splice(i, 1);
+        } else {
+          p.vy -= 14 * dt;
+          p.mesh.position.x += p.vx * dt;
+          p.mesh.position.y += p.vy * dt;
+          p.mesh.position.z += p.vz * dt;
+          p.mesh.scale.setScalar(p.life);
+        }
+      }
+
+      // Sonar timers
+      if (playerState.sonarCooldown > 0) {
+        playerState.sonarCooldown = Math.max(0, playerState.sonarCooldown - dt);
+        const sonarLabel = document.getElementById('sonar-label');
+        if (sonarLabel) {
+          sonarLabel.textContent = playerState.sonarCooldown > 0
+            ? `Isi Daya (${Math.ceil(playerState.sonarCooldown)}d)`
+            : 'Sonar Peti [Q]';
+        }
+      }
+      if (playerState.sonarPulseTimer > 0) {
+        playerState.sonarPulseTimer = Math.max(0, playerState.sonarPulseTimer - dt);
+      }
+
+      // Pause player movement if game hasn't started or modal is open
+      if (!gameStarted || isModalOpen) {
+        if (!gameStarted) {
+          camState.yaw += dt * 0.1;
+          updateCameraPosition();
+        }
+        return;
+      }
+
+      // Determine input direction relative to camera yaw
+      let forwardInput = 0;
+      let rightInput = 0;
+
+      if (keys.w || keys.arrowup) forwardInput += 1;
+      if (keys.s || keys.arrowdown) forwardInput -= 1;
+      if (keys.d || keys.arrowright) rightInput += 1;
+      if (keys.a || keys.arrowleft) rightInput -= 1;
+
+      if (joystick.active) {
+        forwardInput -= joystick.dy;
+        rightInput += joystick.dx;
+      }
+
+      const inputLen = Math.hypot(forwardInput, rightInput);
+      const isMoving = inputLen > 0.05;
+      const wantsSprint = keys.shift || joystick.sprint;
+
+      // Stamina management
+      if (wantsSprint && isMoving && !playerState.exhausted && playerState.stamina > 0) {
+        playerState.stamina = Math.max(0, playerState.stamina - dt * 26);
+        if (playerState.stamina === 0) playerState.exhausted = true;
+      } else {
+        playerState.stamina = Math.min(100, playerState.stamina + dt * 18);
+        if (playerState.stamina > 25) playerState.exhausted = false;
+      }
+
+      const isSprinting = wantsSprint && isMoving && !playerState.exhausted;
+      const stamBar = document.getElementById('stamina-bar');
+      const stamTxt = document.getElementById('stamina-text');
+      if (stamBar && stamTxt) {
+        stamBar.style.width = `${Math.round(playerState.stamina)}%`;
+        stamTxt.textContent = `${Math.round(playerState.stamina)}%`;
+      }
+
+      if (isMoving) {
+        const normF = forwardInput / Math.max(1, inputLen);
+        const normR = rightInput / Math.max(1, inputLen);
+
+        const sinY = Math.sin(camState.yaw);
+        const cosY = Math.cos(camState.yaw);
+
+        const moveX = (-sinY * normF) + (cosY * normR);
+        const moveZ = (-cosY * normF) - (sinY * normR);
+
+        // Perlambat sedikit saat mendaki tebing curam atau berenang di air dangkal
+        const inShallowWater = playerState.pos.y < -0.15;
+        const envFactor = inShallowWater ? 0.68 : 1.0;
+
+        const currentSpeed = playerState.speed * envFactor * (isSprinting ? playerState.sprintMultiplier : 1);
+        const nextX = playerState.pos.x + moveX * currentSpeed * dt;
+        const nextZ = playerState.pos.z + moveZ * currentSpeed * dt;
+
+        // Cegah pemain berjalan lurus menembus tebing yang terlalu vertikal kecuali melompat
+        const nextGround = getWalkableHeight(nextX, nextZ, playerState.pos.y);
+        if (nextGround - playerState.pos.y <= 1.85) {
+          playerState.pos.x = nextX;
+          playerState.pos.z = nextZ;
+        }
+
+        const targetYaw = Math.atan2(moveX, moveZ);
+        let diff = targetYaw - playerState.yaw;
+        while (diff < -Math.PI) diff += Math.PI * 2;
+        while (diff > Math.PI) diff -= Math.PI * 2;
+        playerState.yaw += diff * Math.min(1, dt * 12);
+
+        playerState.walkCycle += dt * (isSprinting ? 17 : 11);
+        leftLeg.rotation.x = Math.sin(playerState.walkCycle) * 0.68;
+        rightLeg.rotation.x = -Math.sin(playerState.walkCycle) * 0.68;
+        leftArm.rotation.x = -Math.sin(playerState.walkCycle) * 0.58;
+        rightArm.rotation.x = Math.sin(playerState.walkCycle) * 0.58;
+      } else {
+        leftLeg.rotation.x = THREE.MathUtils.lerp(leftLeg.rotation.x, 0, dt * 10);
+        rightLeg.rotation.x = THREE.MathUtils.lerp(rightLeg.rotation.x, 0, dt * 10);
+        leftArm.rotation.x = THREE.MathUtils.lerp(leftArm.rotation.x, 0, dt * 10);
+        rightArm.rotation.x = THREE.MathUtils.lerp(rightArm.rotation.x, 0, dt * 10);
+      }
+
+      // Keep player within world archipelago boundary
+      const distFromCenter = Math.hypot(playerState.pos.x, playerState.pos.z);
+      const maxRadius = ISLAND_RADIUS - 12;
+      if (distFromCenter > maxRadius) {
+        const ratio = maxRadius / distFromCenter;
+        playerState.pos.x *= ratio;
+        playerState.pos.z *= ratio;
+      }
+
+      // Resolve collisions against trees & rock trunks
+      const playerRadius = 0.72;
+      for (let i = 0; i < colliders.length; i++) {
+        const col = colliders[i];
+        const dx = playerState.pos.x - col.x;
+        const dz = playerState.pos.z - col.z;
+        const dist = Math.hypot(dx, dz);
+        const minDist = playerRadius + col.r;
+        if (dist < minDist && dist > 0.001) {
+          // Izinkan pemain berdiri di atas batu jika sudah melompat tinggi
+          const topSurface = getWalkableHeight(playerState.pos.x, playerState.pos.z, playerState.pos.y);
+          if (playerState.pos.y < topSurface - 0.5) {
+            const overlap = minDist - dist;
+            playerState.pos.x += (dx / dist) * overlap;
+            playerState.pos.z += (dz / dist) * overlap;
+          }
+        }
+      }
+
+      // Jump & Gravity (kuat untuk memanjat batu & undakan candi)
+      if (keys.space && playerState.isGrounded) {
+        playerState.vel.y = 13.5;
+        playerState.isGrounded = false;
+        soundFX.playJump();
+      }
+
+      playerState.vel.y -= 29 * dt;
+      playerState.pos.y += playerState.vel.y * dt;
+
+      const groundY = getWalkableHeight(playerState.pos.x, playerState.pos.z, playerState.pos.y);
+      if (playerState.pos.y <= groundY) {
+        playerState.pos.y = groundY;
+        playerState.vel.y = 0;
+        playerState.isGrounded = true;
+      }
+
+      playerGroup.position.copy(playerState.pos);
+      playerGroup.rotation.y = playerState.yaw;
+
+      updateCameraPosition();
+      checkChestProximity();
+      renderMinimap();
+    }
+
+    function updateCameraPosition() {
+      const targetPos = new THREE.Vector3(
+        playerState.pos.x,
+        playerState.pos.y + 2.2,
+        playerState.pos.z
+      );
+
+      const camX = targetPos.x + Math.sin(camState.yaw) * Math.cos(camState.pitch) * camState.distance;
+      const camY = targetPos.y + Math.sin(camState.pitch) * camState.distance;
+      const camZ = targetPos.z + Math.cos(camState.yaw) * Math.cos(camState.pitch) * camState.distance;
+
+      const terrainAtCam = getBaseTerrainHeight(camX, camZ);
+      camera.position.set(camX, Math.max(terrainAtCam + 1.4, camY), camZ);
+      camera.lookAt(targetPos);
+    }
+
+    function checkChestProximity() {
+      let closest = null;
+      let closestDist = 4.5;
+
+      for (let i = 0; i < chests.length; i++) {
+        const c = chests[i];
+        if (c.opened) continue;
+        const d = Math.hypot(c.x - playerState.pos.x, c.z - playerState.pos.z);
+        const dy = Math.abs(c.y - playerState.pos.y);
+        if (d < closestDist && dy < 3.2) {
+          closestDist = d;
+          closest = c;
+        }
+      }
+
+      nearestUnopenedChest = closest;
+      const promptEl = document.getElementById('interact-prompt');
+
+      if (closest) {
+        document.getElementById('prompt-chest-num').textContent = closest.id;
+        promptEl.classList.remove('hidden');
+      } else {
+        promptEl.classList.add('hidden');
+      }
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const dt = Math.min(clock.getDelta(), 0.05);
+      updateSimulation(dt);
+      renderer.render(scene, camera);
+    }
+
+    /**
+     * ============================================================================
+     * EVENT LISTENERS (KEYBOARD, MOUSE CAMERA, TOUCH JOYSTICK, BUTTONS)
+     * ============================================================================
+     */
+    function setupEventListeners() {
+      // Resize handler
+      window.addEventListener('resize', () => {
+        if (!camera || !renderer) return;
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+
+      // Keyboard controls
+      window.addEventListener('keydown', (e) => {
+        const k = e.key.toLowerCase();
+        if (k in keys) keys[k] = true;
+        if (e.code === 'Space') keys.space = true;
+
+        // Press 'Q' for Sonar Pulse
+        if (k === 'q' && gameStarted && !isModalOpen) {
+          triggerSonarPulse();
+        }
+
+        // Press 'E' or 'Enter' to open nearby treasure chest
+        if ((k === 'e' || k === 'enter') && gameStarted && !isModalOpen && nearestUnopenedChest) {
+          openChestQuiz(nearestUnopenedChest);
+        }
+      });
+
+      window.addEventListener('keyup', (e) => {
+        const k = e.key.toLowerCase();
+        if (k in keys) keys[k] = false;
+        if (e.code === 'Space') keys.space = false;
+      });
+
+      // Mouse drag to orbit camera & raycast click on treasure chests
+      const canvas = document.getElementById('game-canvas');
+      let mouseDownPos = { x: 0, y: 0 };
+
+      canvas.addEventListener('mousedown', (e) => {
+        camState.isDragging = true;
+        camState.lastX = e.clientX;
+        camState.lastY = e.clientY;
+        mouseDownPos = { x: e.clientX, y: e.clientY };
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!camState.isDragging || isModalOpen) return;
+        const dx = e.clientX - camState.lastX;
+        const dy = e.clientY - camState.lastY;
+        camState.lastX = e.clientX;
+        camState.lastY = e.clientY;
+
+        camState.yaw -= dx * 0.0065;
+        camState.pitch = THREE.MathUtils.clamp(camState.pitch + dy * 0.005, 0.15, 1.15);
+      });
+
+      window.addEventListener('mouseup', (e) => {
+        camState.isDragging = false;
+        // If quick click (not drag), check if player clicked a nearby chest directly
+        const moveDist = Math.hypot(e.clientX - mouseDownPos.x, e.clientY - mouseDownPos.y);
+        if (moveDist < 6 && gameStarted && !isModalOpen && nearestUnopenedChest) {
+          openChestQuiz(nearestUnopenedChest);
+        }
+      });
+
+      // Zoom camera with mouse wheel
+      canvas.addEventListener('wheel', (e) => {
+        if (isModalOpen) return;
+        camState.distance = THREE.MathUtils.clamp(camState.distance + e.deltaY * 0.01, 8, 26);
+      }, { passive: true });
+
+      // Mobile Virtual Joystick
+      const joyZone = document.getElementById('joystick-zone');
+      const joyKnob = document.getElementById('joystick-knob');
+      const maxJoyDist = 36;
+
+      function updateJoystick(clientX, clientY) {
+        const rect = joyZone.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        let dx = clientX - centerX;
+        let dy = clientY - centerY;
+        const dist = Math.hypot(dx, dy);
+
+        if (dist > maxJoyDist) {
+          dx = (dx / dist) * maxJoyDist;
+          dy = (dy / dist) * maxJoyDist;
+        }
+
+        joyKnob.style.transform = `translate(${dx}px, ${dy}px)`;
+        joystick.dx = dx / maxJoyDist;
+        joystick.dy = dy / maxJoyDist;
+      }
+
+      joyZone.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        joystick.active = true;
+        const touch = e.touches[0];
+        updateJoystick(touch.clientX, touch.clientY);
+      }, { passive: false });
+
+      joyZone.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        if (!joystick.active) return;
+        const touch = e.touches[0];
+        updateJoystick(touch.clientX, touch.clientY);
+      }, { passive: false });
+
+      const resetJoystick = () => {
+        joystick.active = false;
+        joystick.dx = 0;
+        joystick.dy = 0;
+        joyKnob.style.transform = 'translate(0px, 0px)';
+      };
+      joyZone.addEventListener('touchend', resetJoystick);
+      joyZone.addEventListener('touchcancel', resetJoystick);
+
+      // Mobile Sprint & Jump Buttons
+      const btnMobSprint = document.getElementById('btn-mobile-sprint');
+      btnMobSprint.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        joystick.sprint = true;
+      });
+      btnMobSprint.addEventListener('touchend', () => {
+        joystick.sprint = false;
+      });
+
+      const btnMobJump = document.getElementById('btn-mobile-jump');
+      btnMobJump.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if (playerState.isGrounded && !isModalOpen) {
+          playerState.vel.y = 13.5;
+          playerState.isGrounded = false;
+          soundFX.playJump();
+        }
+      });
+
+      // Sonar Buttons (Desktop & Mobile)
+      document.getElementById('btn-sonar').addEventListener('click', triggerSonarPulse);
+      document.getElementById('btn-mobile-sonar').addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        triggerSonarPulse();
+      });
+
+      // UI Buttons
+      document.getElementById('btn-start-game').addEventListener('click', () => {
+        soundFX.init();
+        gameStarted = true;
+        const startScreen = document.getElementById('start-screen');
+        startScreen.style.opacity = '0';
+        setTimeout(() => startScreen.classList.add('hidden'), 450);
+
+        document.getElementById('hud').classList.remove('hidden');
+        updateHUD();
+        showToast('Ikuti titik emas di Radar untuk menemukan 30 peti harta karun!', 'info');
+      });
+
+      document.getElementById('btn-interact').addEventListener('click', () => {
+        if (nearestUnopenedChest) openChestQuiz(nearestUnopenedChest);
+      });
+
+      document.getElementById('btn-quiz-continue').addEventListener('click', closeQuizModal);
+
+      // Study Guide Modal toggles
+      const openGuide = () => {
+        isModalOpen = true;
+        const m = document.getElementById('guide-modal');
+        m.classList.remove('hidden');
+        m.classList.add('flex');
+      };
+      const closeGuide = () => {
+        isModalOpen = false;
+        const m = document.getElementById('guide-modal');
+        m.classList.add('hidden');
+        m.classList.remove('flex');
+      };
+
+      document.getElementById('btn-open-guide-start').addEventListener('click', openGuide);
+      document.getElementById('btn-materi').addEventListener('click', openGuide);
+      document.getElementById('btn-close-guide').addEventListener('click', closeGuide);
+      document.getElementById('btn-close-guide-bottom').addEventListener('click', closeGuide);
+
+      // Sound Toggle
+      document.getElementById('btn-sound').addEventListener('click', () => {
+        soundFX.enabled = !soundFX.enabled;
+        document.getElementById('sound-icon').textContent = soundFX.enabled ? '🔊' : '🔇';
+        showToast(soundFX.enabled ? 'Efek suara diaktifkan' : 'Efek suara dimatikan', 'info');
+      });
+
+      // Finish / Result Modal
+      document.getElementById('btn-finish').addEventListener('click', openResultModal);
+      document.getElementById('btn-resume-explore').addEventListener('click', () => {
+        isModalOpen = false;
+        const m = document.getElementById('result-modal');
+        m.classList.add('hidden');
+        m.classList.remove('flex');
+      });
+      document.getElementById('btn-restart-game').addEventListener('click', restartGame);
+    }
+
+    // Boot up on window load
+    window.onload = function () {
+      init3DWorld();
+      setupEventListeners();
+      animate();
+    };
+  </script>
+</body>
+</html>
